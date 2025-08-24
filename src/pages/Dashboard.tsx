@@ -1,9 +1,13 @@
 // src/pages/Dashboard.tsx
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
+  const [userName, setUserName] = useState(''); 
+  const [userEmail, setUserEmail] = useState('');
+  const [loading, setLoading] = useState(true);
   const [progressText, setProgressText] = useState('Ngày 0 / 99');
   const [progressWidth, setProgressWidth] = useState(0);
   const [sessionTime, setSessionTime] = useState('00:00:00');
@@ -15,8 +19,70 @@ export default function Dashboard() {
     99: false,
   });
 
+  const navigate = useNavigate();
+
   // Cấu hình: Ngày bắt đầu thử thách
   const startDate = new Date('2025-08-22T00:00:00');
+
+  // Lấy thông tin user từ Supabase
+  useEffect(() => {
+    const getUserInfo = async () => {
+      try {
+        // Lấy session hiện tại
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          navigate('/');
+          return;
+        }
+
+        if (!session) {
+          navigate('/');
+          return;
+        }
+
+        // Lấy thông tin từ bảng members
+        const { data: memberData, error: memberError } = await supabase
+          .from('members')
+          .select('ho_ten, email, telegram, so_dien_thoai')
+          .eq('email', session.user.email)
+          .single();
+
+        if (memberError) {
+          console.error('Error fetching member data:', memberError);
+          // Fallback to user email if no member data found
+          setUserName(session.user.email?.split('@')[0] || 'Người dùng');
+          setUserEmail(session.user.email || '');
+        } else {
+          setUserName(memberData.ho_ten || 'Người dùng');
+          setUserEmail(memberData.email || '');
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error in getUserInfo:', error);
+        setLoading(false);
+        navigate('/');
+      }
+    };
+
+    getUserInfo();
+  }, [navigate]);
+
+  // Xử lý đăng xuất
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   useEffect(() => {
     const now = new Date();
@@ -99,6 +165,18 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [startDate]);
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải thông tin...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Header */}
@@ -108,13 +186,15 @@ export default function Dashboard() {
             <span className="text-primary">99 Days</span> with NhiLe
           </Link>
           <nav className="flex space-x-6 items-center">
-            <span className="hidden sm:block text-gray-700">Chào mừng, Thuỳ Dung!</span>
-            <Link
-              to="/"
+            <span className="hidden sm:block text-gray-700">
+              Chào mừng, <span className="font-semibold text-primary">{userName}</span>!
+            </span>
+            <button
+              onClick={handleLogout}
               className="bg-primary text-primary-foreground px-4 py-2 rounded-full hover:bg-primary/90 transition duration-300 text-sm font-medium"
             >
               Đăng xuất
-            </Link>
+            </button>
           </nav>
         </div>
       </header>
