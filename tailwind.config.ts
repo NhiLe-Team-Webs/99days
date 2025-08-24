@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { Config } from "tailwindcss";
+const tailwindcssAnimate = require("tailwindcss-animate");
 
 export default {
 	darkMode: ["class"],
