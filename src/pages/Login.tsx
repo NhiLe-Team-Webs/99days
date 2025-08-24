@@ -1,21 +1,77 @@
 // src/pages/Login.tsx
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // nếu bạn muốn thêm "Hiện mật khẩu"
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Kiểm tra session sau khi Google login
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Chuyển đến trang kiểm tra trạng thái
+        navigate('/auth-status');
+      }
+    };
+
+    checkSession();
+  }, [navigate]);
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth-status` // 👈 Chuyển đến trang kiểm tra
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể đăng nhập bằng Google. Vui lòng thử lại.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ Cặp thông tin test
-    if (email === 'test@nhile.com' && password === '123456') {
-      // Đăng nhập thành công → chuyển sang Dashboard
-      window.location.href = '/dashboard'; // hoặc dùng navigate('/dashboard') nếu dùng react-router
-    } else {
-      alert('Email hoặc mật khẩu không đúng!');
+    try {
+      // 1. Đăng nhập bằng email/password
+      const {  error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      // 2. Kiểm tra xem email có trong bảng members không
+      const {  member, error: memberError } = await supabase
+        .from('members')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (memberError || !member) {
+        throw new Error('Email chưa được duyệt tham gia chương trình');
+      }
+
+      // 3. Chuyển đến dashboard
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: "Lỗi đăng nhập",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
@@ -35,10 +91,7 @@ export default function Login() {
         {/* Google Login Button */}
         <button
           type="button"
-          onClick={() => {
-            // TODO: Tích hợp Google Auth (Firebase, OAuth, v.v.)
-            console.log('Google login clicked');
-          }}
+          onClick={handleGoogleSignIn}
           className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300 mb-4"
         >
           <svg className="w-6 h-6" viewBox="0 0 48 48">
