@@ -23,7 +23,67 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   // Cấu hình: Ngày bắt đầu thử thách
-  const startDate = new Date('2025-08-22T00:00:00');
+  const startDate = new Date('2025-05-10T00:00:00');
+
+  // Badge configurations with new SVG icons
+  const badgeConfigs = [
+    {
+      day: 7,
+      name: 'Khởi Đầu Rực Lửa',
+      unlockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#EA3323">
+          <path d="M220-400q0 63 28.5 118.5T328-189q-4-12-6-24.5t-2-24.5q0-32 12-60t35-51l113-111 113 111q23 23 35 51t12 60q0 12-2 24.5t-6 24.5q51-37 79.5-92.5T740-400q0-54-23-105.5T651-600q-21 15-44 23.5t-46 8.5q-61 0-101-41.5T420-714v-20q-46 33-83 73t-63 83.5q-26 43.5-40 89T220-400Zm260 24-71 70q-14 14-21.5 31t-7.5 37q0 41 29 69.5t71 28.5q42 0 71-28.5t29-69.5q0-20-7.5-37T551-306l-71-70Zm0-464v132q0 34 23.5 57t57.5 23q18 0 33.5-7.5T622-658l18-22q74 42 117 117t43 163q0 134-93 227T480-80q-134 0-227-93t-93-227q0-128 86-246.5T480-840Z"/>
+        </svg>
+      ),
+      lockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF">
+          <path d="M220-400q0 63 28.5 118.5T328-189q-4-12-6-24.5t-2-24.5q0-32 12-60t35-51l113-111 113 111q23 23 35 51t12 60q0 12-2 24.5t-6 24.5q51-37 79.5-92.5T740-400q0-54-23-105.5T651-600q-21 15-44 23.5t-46 8.5q-61 0-101-41.5T420-714v-20q-46 33-83 73t-63 83.5q-26 43.5-40 89T220-400Zm260 24-71 70q-14 14-21.5 31t-7.5 37q0 41 29 69.5t71 28.5q42 0 71-28.5t29-69.5q0-20-7.5-37T551-306l-71-70Zm0-464v132q0 34 23.5 57t57.5 23q18 0 33.5-7.5T622-658l18-22q74 42 117 117t43 163q0 134-93 227T480-80q-134 0-227-93t-93-227q0-128 86-246.5T480-840Z"/>
+        </svg>
+      )
+    },
+    {
+      day: 30,
+      name: 'Chiến Binh Bền Bỉ',
+      unlockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#5985E1">
+          <path d="M769-88 645-212l-88 88-43-43q-17-17-17-42t17-42l199-199q17-17 42-17t42 17l43 43-88 88 123 124q9 9 9 21t-9 21l-64 65q-9 9-21 9t-21-9Zm111-636L427-271l19 20q17 17 17 42t-17 42l-43 43-88-88L191-88q-9 9-21 9t-21-9l-65-65q-9-9-9-21t9-21l124-124-88-88 43-43q17-17 42-17t42 17l20 19 453-453h160v160ZM320-568l38-38 38-38-38 38-38 38Zm-42 42L80-724v-160h160l198 198-42 42-181-180h-75v75l180 181-42 42Zm105 212 437-435v-75h-75L308-389l75 75Zm0 0-37-38-38-37 38 37 37 38Z"/>
+        </svg>
+      ),
+      lockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF">
+          <path d="M769-88 645-212l-88 88-43-43q-17-17-17-42t17-42l199-199q17-17 42-17t42 17l43 43-88 88 123 124q9 9 9 21t-9 21l-64 65q-9 9-21 9t-21-9Zm111-636L427-271l19 20q17 17 17 42t-17 42l-43 43-88-88L191-88q-9 9-21 9t-21-9l-65-65q-9-9-9-21t9-21l124-124-88-88 43-43q17-17 42-17t42 17l20 19 453-453h160v160ZM320-568l38-38 38-38-38 38-38 38Zm-42 42L80-724v-160h160l198 198-42 42-181-180h-75v75l180 181-42 42Zm105 212 437-435v-75h-75L308-389l75 75Zm0 0-37-38-38-37 38 37 37 38Z"/>
+        </svg>
+      )
+    },
+    {
+      day: 66,
+      name: 'Bậc Thầy Thói Quen',
+      unlockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#F19E39">
+          <path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/>
+        </svg>
+      ),
+      lockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF">
+          <path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/>
+        </svg>
+      )
+    },
+    {
+      day: 99,
+      name: 'Huyền Thoại',
+      unlockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#EAC452">
+          <path d="m226-120-90-498q-35 13-65.5-8T40-685q0-29.7 20.8-50.85Q81.59-757 110.8-757q29.2 0 50.2 21.15 21 21.15 21 50.85 0 15.11-5.5 28.05Q171-644 161-634q26.21 17.33 53.01 28.67Q240.81-594 270.59-594 323-594 365-624t68-76l23-42q-21-8-34-26t-13-41q0-29.29 20.8-50.14 20.79-20.86 50-20.86 29.2 0 50.2 20.86 21 20.85 21 50.14 0 23-13 41t-34 26l23 42q26 46 68.5 76t94.99 30q29.83 0 56.67-11.5Q774-617 800-633q-11-10-16.5-23.46T778-685q0-29.7 20.8-50.85 20.79-21.15 50-21.15 29.2 0 50.2 21.15 21 21.15 21 50.85 0 37-29.5 58T827-617l-92 497H226Zm50-60h408l66-361q-15 3-30 5.5t-30 2.5q-66 0-120.5-35T480-660q-35 56-89 91.5T271-533q-16 0-31-2.5t-30-4.5l66 360Zm204 0Z"/>
+        </svg>
+      ),
+      lockedIcon: (
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF">
+          <path d="m226-120-90-498q-35 13-65.5-8T40-685q0-29.7 20.8-50.85Q81.59-757 110.8-757q29.2 0 50.2 21.15 21 21.15 21 50.85 0 15.11-5.5 28.05Q171-644 161-634q26.21 17.33 53.01 28.67Q240.81-594 270.59-594 323-594 365-624t68-76l23-42q-21-8-34-26t-13-41q0-29.29 20.8-50.14 20.79-20.86 50-20.86 29.2 0 50.2 20.86 21 20.85 21 50.14 0 23-13 41t-34 26l23 42q26 46 68.5 76t94.99 30q29.83 0 56.67-11.5Q774-617 800-633q-11-10-16.5-23.46T778-685q0-29.7 20.8-50.85 20.79-21.15 50-21.15 29.2 0 50.2 21.15 21 21.15 21 50.85 0 37-29.5 58T827-617l-92 497H226Zm50-60h408l66-361q-15 3-30 5.5t-30 2.5q-66 0-120.5-35T480-660q-35 56-89 91.5T271-533q-16 0-31-2.5t-30-4.5l66 360Zm204 0Z"/>
+        </svg>
+      )
+    }
+  ];
 
   // Lấy thông tin user từ Supabase - PHIÊN BẢN FINAL
   useEffect(() => {
@@ -254,42 +314,36 @@ export default function Dashboard() {
             <div className="bg-white p-6 rounded-xl shadow-lg">
               <h3 className="text-xl font-bold mb-4">Huy hiệu đã đạt được</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                {[
-                  { day: 7, name: 'Khởi Đầu Rực Lửa', icon: 'M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 00-2.725 2.472z' },
-                  { day: 30, name: 'Chiến Binh Bền Bỉ', icon: 'M16.5 18.75h-9a9.75 9.75 0 100-13.5h9a9.75 9.75 0 000 13.5zM10.5 6.75h.008v.008h-.008V6.75z' },
-                  { day: 66, name: 'Bậc Thầy Thói Quen', icon: 'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM18 13.5l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 18l-1.035.259a3.375 3.375 0 00-2.456 2.456L18 21.75l-.259-1.035a3.375 3.375 0 00-2.456-2.456L14.25 18l1.035-.259a3.375 3.375 0 002.456-2.456L18 13.5z' },
-                  { day: 99, name: 'Huyền Thoại 99', icon: 'M16.5 18.75h-9a9.75 9.75 0 100-13.5h9a9.75 9.75 0 000 13.5zM10.5 6.75h.008v.008h-.008V6.75z' },
-                ].map((badge) => (
-                  <div
-                    key={badge.day}
-                    className={`badge ${badges[badge.day as keyof typeof badges] ? '' : 'locked'}`}
-                  >
+                {badgeConfigs.map((badge) => {
+                  const isUnlocked = badges[badge.day as keyof typeof badges];
+                  return (
                     <div
-                      className={`rounded-full w-24 h-24 mx-auto flex items-center justify-center ${
-                        badges[badge.day as keyof typeof badges]
-                          ? 'bg-primary/10'
-                          : 'bg-gray-200'
-                      }`}
+                      key={badge.day}
+                      className={`badge ${isUnlocked ? 'unlocked' : 'locked'}`}
                     >
-                      <svg
-                        className={`w-12 h-12 ${
-                          badges[badge.day as keyof typeof badges]
-                            ? 'text-primary'
-                            : 'text-gray-500'
+                      <div
+                        className={`rounded-full w-24 h-24 mx-auto flex items-center justify-center ${
+                          isUnlocked
+                            ? 'bg-gradient-to-br from-white-100 to-orange-100 shadow-lg border-2 border-yellow-300'
+                            : 'bg-gray-200'
                         }`}
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d={badge.icon} />
-                      </svg>
+                        {isUnlocked ? badge.unlockedIcon : badge.lockedIcon}
+                      </div>
+                      <p className={`font-semibold mt-2 ${isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>
+                        {badge.name}
+                      </p>
+                      <p className="text-sm text-gray-500">{badge.day} ngày</p>
+                      {isUnlocked && (
+                        <div className="mt-1">
+                          <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            ✓ Đã đạt được
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <p className="font-semibold mt-2">{badge.name}</p>
-                    <p className="text-sm text-gray-500">{badge.day} ngày</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
