@@ -25,7 +25,7 @@ export default function Dashboard() {
   // Cấu hình: Ngày bắt đầu thử thách
   const startDate = new Date('2025-08-22T00:00:00');
 
-  // Lấy thông tin user từ Supabase
+  // Lấy thông tin user từ Supabase - PHIÊN BẢN FINAL
   useEffect(() => {
     const getUserInfo = async () => {
       try {
@@ -33,36 +33,59 @@ export default function Dashboard() {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('Error getting session:', sessionError);
+          console.error('❌ Session error:', sessionError);
           navigate('/');
           return;
         }
 
         if (!session) {
+          console.log('❌ No session found');
           navigate('/');
           return;
         }
 
-        // Lấy thông tin từ bảng members
-        const { data: memberData, error: memberError } = await supabase
+        const userEmail = session.user.email;
+        console.log('✅ Session user email:', userEmail);
+
+        // Query KHÔNG có nam_sinh
+        let { data: memberData, error: memberError } = await supabase
           .from('members')
           .select('ho_ten, email, telegram, so_dien_thoai')
-          .eq('email', session.user.email)
+          .eq('email', userEmail)
           .single();
 
-        if (memberError) {
-          console.error('Error fetching member data:', memberError);
-          // Fallback to user email if no member data found
-          setUserName(session.user.email?.split('@')[0] || 'Người dùng');
-          setUserEmail(session.user.email || '');
+        console.log('📊 Query result - memberData:', memberData);
+        console.log('📊 Query result - memberError:', memberError);
+
+        if (memberError || !memberData) {
+          console.log('❌ Using fallback - memberError:', memberError);
+          const fallbackName = userEmail?.split('@')[0] || 'Người dùng';
+          console.log('🔄 Fallback name:', fallbackName);
+          
+          setUserName(fallbackName);
+          setUserEmail(userEmail || '');
         } else {
-          setUserName(memberData.ho_ten || 'Người dùng');
-          setUserEmail(memberData.email || '');
+          console.log('✅ Found member data:', memberData);
+          
+          let displayName = 'Người dùng';
+          
+          if (memberData.ho_ten && memberData.ho_ten.trim() !== '') {
+            displayName = memberData.ho_ten.trim();
+            console.log('✅ Using ho_ten:', displayName);
+          } else {
+            displayName = userEmail?.split('@')[0] || 'Người dùng';
+            console.log('🔄 Using email fallback:', displayName);
+          }
+          
+          setUserName(displayName);
+          setUserEmail(memberData.email || userEmail || '');
+          
+          console.log('✅ Final state - Name:', displayName, 'Email:', memberData.email || userEmail);
         }
 
         setLoading(false);
       } catch (error) {
-        console.error('Error in getUserInfo:', error);
+        console.error('❌ Error in getUserInfo:', error);
         setLoading(false);
         navigate('/');
       }
@@ -70,8 +93,6 @@ export default function Dashboard() {
 
     getUserInfo();
   }, [navigate]);
-
-  
 
   // Xử lý đăng xuất
   const handleLogout = async () => {
@@ -87,6 +108,7 @@ export default function Dashboard() {
     }
   };
 
+  // useEffect để cập nhật countdown và progress
   useEffect(() => {
     const now = new Date();
     const endDate = new Date(startDate);
@@ -128,14 +150,17 @@ export default function Dashboard() {
     updateSessionCountdown();
     const interval = setInterval(updateSessionCountdown, 1000);
 
-    // 5. Lấy quote tạo động lực từ Gemini API với tên người dùng
+    return () => clearInterval(interval);
+  }, [startDate]);
+
+  // useEffect riêng để fetch quote khi đã có thông tin user
+  useEffect(() => {
     const fetchMotivationQuote = async () => {
-      if (!userName) return; // Chờ userName load xong
+      if (!userName || !userEmail) return; // Đảm bảo có đủ thông tin
       
       try {
-        // Kiểm tra cache theo ngày và tên user
         const today = new Date().toDateString();
-        const cacheKey = `quote_${userName}_${today}`;
+        const cacheKey = `quote_${userName}_${userEmail}_${today}`;
         const cachedQuote = localStorage.getItem(cacheKey);
         
         if (cachedQuote) {
@@ -143,11 +168,13 @@ export default function Dashboard() {
           return;
         }
 
-        // Gọi API để tạo quote mới
-        const newQuote = await generateMotivationalQuote(userName);
-        setQuote(newQuote);
+        const newQuote = await generateMotivationalQuote(userName, {
+          email: userEmail,
+          phone: '',
+          telegram: '',
+        });
         
-        // Cache quote cho ngày hôm nay
+        setQuote(newQuote);
         localStorage.setItem(cacheKey, newQuote);
         
       } catch (error) {
@@ -156,15 +183,8 @@ export default function Dashboard() {
       }
     };
 
-    // Gọi hàm fetch quote sau khi có userName
-    if (userName) {
-      fetchMotivationQuote();
-    }
-
-    
-
-    return () => clearInterval(interval);
-  }, [startDate]);
+    fetchMotivationQuote();
+  }, [userName, userEmail]); // Chỉ chạy khi có đủ thông tin user
 
   // Loading state
   if (loading) {
@@ -207,7 +227,7 @@ export default function Dashboard() {
           {loading ? (
             <div className="h-6 bg-yellow-200 rounded animate-pulse"></div>
           ) : (
-           <p className="text-white italic font-medium">"{quote}"</p>
+          <p className="text-white italic font-medium">"{quote}"</p>
           )}
         </div>
 

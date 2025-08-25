@@ -1,25 +1,34 @@
-// lib/gemini.ts
-import { GoogleGenerativeAI } from "@google/generative-ai";
+export const generateMotivationalQuote = async (
+  name: string,
+  userInfo?: {
+    email?: string;
+    phone?: string;
+    telegram?: string;
+  }
+): Promise<string> => {
+  // Tạo seed duy nhất cho mỗi user dựa trên thông tin cá nhân (không dùng age)
+  const userSeed = `${name}_${userInfo?.email || ''}`;
+  const today = new Date().toDateString();
+  const uniqueSeed = `${userSeed}_${today}`;
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
-
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-export const generateMotivationalQuote = async (name: string): Promise<string> => {
   const prompt = `
-Bạn là một huấn luyện viên thể hình chuyên nghiệp và tràn đầy năng lượng. 
-Hãy tạo một câu động viên ngắn gọn, tích cực cho ${name} để bắt đầu buổi tập thể dục.
+Bạn là một huấn luyện viên thể hình cá nhân chuyên nghiệp. 
+Hãy tạo một câu động viên độc đáo và cá nhân hóa cho ${name}.
+
+Thông tin người dùng:
+- Tên: ${name}
+- Ngày: ${today}
+- Mã cá nhân: ${uniqueSeed.slice(-8)}
 
 Yêu cầu:
-- Dưới 100 ký tự
-- Gọi tên "${name}" một cách thân thiện
-- Tập trung vào việc tập thể dục, sức khỏe
-- Phong cách: năng động, khích lệ, tạo động lực
+- Dưới 120 ký tự
+- Phải gọi tên "${name}"
+- Tạo câu hoàn toàn khác biệt dựa trên thông tin cá nhân
+- Phong cách: năng động, cá nhân, truyền cảm hứng về tập luyện
 - Không dùng dấu ngoặc kép
-- Chỉ trả về câu động viên
+- Tập trung vào fitness, sức khỏe, động lực
 
-Ví dụ: ${name} ơi, cơ thể mạnh mẽ bắt đầu từ quyết tâm hôm nay!
+Hãy tạo một câu động viên HOÀN TOÀN DUY NHẤT cho ${name}.
 `;
 
   try {
@@ -27,9 +36,16 @@ Ví dụ: ${name} ơi, cơ thể mạnh mẽ bắt đầu từ quyết tâm hôm
     const response = await result.response;
     let quote = response.text().trim();
     quote = quote.replace(/^"|"$/g, '').replace(/\*+/g, '');
-    return quote || `Bạn làm tốt lắm, ${name}! Cứ tiếp tục tiến lên!`;
+    return quote || `${name} ơi, hôm nay là ngày tuyệt vời để thử thách bản thân!`;
   } catch (error) {
     console.error("Lỗi gọi Gemini API:", error);
-    return `Bạn có thể làm được, ${name}! Đừng bỏ cuộc.`;
+    const fallbacks = [
+      `${name}, sức mạnh nằm trong sự kiên trì!`,
+      `Hôm nay ${name} sẽ mạnh mẽ hơn ngày hôm qua!`,
+      `${name} ơi, mỗi giọt mồ hôi là một bước tiến!`,
+      `Cơ thể khỏe mạnh là món quà ${name} tặng cho chính mình!`
+    ];
+    const hash = uniqueSeed.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    return fallbacks[Math.abs(hash) % fallbacks.length];
   }
 };
