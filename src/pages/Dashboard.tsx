@@ -2,17 +2,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { GeminiService, QuoteCache, getFallbackQuote } from '@/lib/gemini';
+import { generateMotivationalQuote } from '@/lib/gemini';
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
   const [userName, setUserName] = useState(''); 
+  const [quote, setQuote] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [progressText, setProgressText] = useState('Ngày 0 / 99');
   const [progressWidth, setProgressWidth] = useState(0);
   const [sessionTime, setSessionTime] = useState('00:00:00');
-  const [motivationQuote, setMotivationQuote] = useState('Đang tải động lực...');
   const [badges, setBadges] = useState({
     7: false,
     30: false,
@@ -71,6 +71,8 @@ export default function Dashboard() {
     getUserInfo();
   }, [navigate]);
 
+  
+
   // Xử lý đăng xuất
   const handleLogout = async () => {
     try {
@@ -126,50 +128,40 @@ export default function Dashboard() {
     updateSessionCountdown();
     const interval = setInterval(updateSessionCountdown, 1000);
 
-    // 5. Lấy quote tạo động lực từ Gemini API
+    // 5. Lấy quote tạo động lực từ Gemini API với tên người dùng
     const fetchMotivationQuote = async () => {
+      if (!userName) return; // Chờ userName load xong
+      
       try {
-        // Kiểm tra cache trước
-        const cachedQuote = QuoteCache.get('motivation');
-        if (cachedQuote) {
-          setMotivationQuote(cachedQuote);
-          return;
-        }
-
-        // Lấy API key từ environment variables
-        const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+        // Kiểm tra cache theo ngày và tên user
+        const today = new Date().toDateString();
+        const cacheKey = `quote_${userName}_${today}`;
+        const cachedQuote = localStorage.getItem(cacheKey);
         
-        if (!GEMINI_API_KEY) {
-          console.warn('Gemini API key not found in environment variables');
-          console.log('Please add VITE_GEMINI_API_KEY to your .env file');
-          const fallbackQuote = getFallbackQuote();
-          setMotivationQuote(fallbackQuote);
+        if (cachedQuote) {
+          setQuote(cachedQuote);
           return;
         }
 
-        // Sử dụng GeminiService để lấy quote
-        const geminiService = new GeminiService(GEMINI_API_KEY);
-        const quote = await geminiService.generateMotivationalQuote();
+        // Gọi API để tạo quote mới
+        const newQuote = await generateMotivationalQuote(userName);
+        setQuote(newQuote);
         
         // Cache quote cho ngày hôm nay
-        QuoteCache.set(quote, 'motivation');
-        setMotivationQuote(quote);
-        
-        console.log('✅ Successfully fetched quote from Gemini API');
+        localStorage.setItem(cacheKey, newQuote);
         
       } catch (error) {
-        console.error('❌ Error fetching quote from Gemini API:', error);
-        
-        // Fallback to default quotes
-        const fallbackQuote = getFallbackQuote();
-        setMotivationQuote(fallbackQuote);
-        
-        // Optional: Hiển thị thông báo lỗi cho user (không bắt buộc)
-        // console.log('Using fallback quote due to API error');
+        console.error('Lỗi khi tạo câu động lực:', error);
+        setQuote(`Chào ${userName}! Hãy cùng nhau chinh phục thử thách hôm nay nhé! 💪`);
       }
     };
 
-    fetchMotivationQuote();
+    // Gọi hàm fetch quote sau khi có userName
+    if (userName) {
+      fetchMotivationQuote();
+    }
+
+    
 
     return () => clearInterval(interval);
   }, [startDate]);
@@ -212,7 +204,11 @@ export default function Dashboard() {
         {/* Động lực */}
         <div className="bg-gradient-to-r from-primary to-orange-500 text-white p-6 rounded-xl shadow-lg mb-8 text-center">
           <h2 className="text-lg font-semibold mb-2">🔥 Động lực cho hôm nay 🔥</h2>
-          <p className="text-xl italic">{motivationQuote}</p>
+          {loading ? (
+            <div className="h-6 bg-yellow-200 rounded animate-pulse"></div>
+          ) : (
+           <p className="text-white italic font-medium">"{quote}"</p>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
