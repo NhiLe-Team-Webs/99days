@@ -30,12 +30,35 @@ export const submitApplication = async (data: Omit<Applicant, 'id' | 'status' | 
 };
 
 export const checkEmailExists = async (email: string) => {
-  const { data, error } = await supabase
+  console.log('Đang kiểm tra email:', email); // 🔍 Debug
+
+  const { data: applicants, error: error1 } = await supabase
     .from('applicants')
     .select('id')
     .eq('email', email)
     .limit(1);
 
-  if (error) throw error;
-  return data.length > 0;
+  if (error1) {
+    console.error('Lỗi query applicants:', error1);
+    throw error1;
+  }
+
+  console.log('Kết quả applicants:', applicants); // 📊
+
+  if (applicants.length > 0) return true;
+
+  const { data: members, error: error2 } = await supabase
+    .from('members')
+    .select('id')
+    .eq('email', email)
+    .limit(1);
+
+  if (error2) {
+    console.error('Lỗi query members:', error2);
+    throw error2;
+  }
+
+  console.log('Kết quả members:', members); // 📊
+
+  return members.length > 0;
 };

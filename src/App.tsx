@@ -13,9 +13,8 @@ const App = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />  
-      <Route path="/pending-approval" element={<PendingApproval />} /> {/* 👈 Thêm route */}
-      <Route path="/auth-status" element={<AuthStatusHandler />} /> {/* 👈 Thêm route */}
-
+      <Route path="/pending-approval" element={<PendingApproval />} /> 
+      <Route path="/auth-status" element={<AuthStatusHandler />} /> 
       <Route 
         path="/dashboard" 
         element={

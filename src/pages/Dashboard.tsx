@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { GeminiService, QuoteCache, getFallbackQuote } from '@/lib/gemini';
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
@@ -125,38 +126,46 @@ export default function Dashboard() {
     updateSessionCountdown();
     const interval = setInterval(updateSessionCountdown, 1000);
 
-    // 5. Lấy quote tạo động lực (dùng fetch hoặc fallback)
+    // 5. Lấy quote tạo động lực từ Gemini API
     const fetchMotivationQuote = async () => {
-      const defaultQuote = "Mỗi giọt mồ hôi hôm nay là một bước gần hơn đến chiến thắng ngày mai.";
       try {
-        // Trong môi trường thật, bạn sẽ dùng API như Gemini
-        // Vì không thể gọi API ở đây, dùng fallback
-        const motivationalQuotes = [
-        "Thành công là tích lũy của những nỗ lực nhỏ mỗi ngày.",
-        "Hãy tin vào hành trình của bạn – 99 ngày sẽ thay đổi cuộc đời bạn.",
-        "Sức mạnh không đến từ những gì bạn có thể làm, mà từ những gì bạn đã vượt qua.",
-        "Bạn không cần phải nhanh, chỉ cần không ngừng lại.",
-        "Mỗi giọt mồ hôi hôm nay là một bước gần hơn đến chiến thắng ngày mai.",
-        "Không có ngày nào quá nhỏ để tạo nên sự khác biệt.",
-        "Bạn đang tiến gần hơn mỗi khi không bỏ cuộc.",
-        "Ngày hôm nay là viên gạch đầu tiên cho tòa lâu đài của bạn.",
-        "Chỉ cần một bước nhỏ mỗi ngày – bạn sẽ đi rất xa.",
-        "Bạn không cần hoàn hảo, chỉ cần bắt đầu."
-        ];
+        // Kiểm tra cache trước
+        const cachedQuote = QuoteCache.get('motivation');
+        if (cachedQuote) {
+          setMotivationQuote(cachedQuote);
+          return;
+        }
 
-        const getQuoteOfTheDay = () => {
-            const today = new Date();
-            const start = new Date('2024-01-01'); // Mốc thời gian cố định
-            const oneDay = 1000 * 60 * 60 * 24;
-            const diffTime = today.getTime() - start.getTime();
-            const diffDays = Math.floor(diffTime / oneDay);
-            return motivationalQuotes[diffDays % motivationalQuotes.length];
-        };
+        // Lấy API key từ environment variables
+        const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+        
+        if (!GEMINI_API_KEY) {
+          console.warn('Gemini API key not found in environment variables');
+          console.log('Please add VITE_GEMINI_API_KEY to your .env file');
+          const fallbackQuote = getFallbackQuote();
+          setMotivationQuote(fallbackQuote);
+          return;
+        }
 
-        const motivationQuote = getQuoteOfTheDay();
-        setMotivationQuote(motivationQuote);
+        // Sử dụng GeminiService để lấy quote
+        const geminiService = new GeminiService(GEMINI_API_KEY);
+        const quote = await geminiService.generateMotivationalQuote();
+        
+        // Cache quote cho ngày hôm nay
+        QuoteCache.set(quote, 'motivation');
+        setMotivationQuote(quote);
+        
+        console.log('✅ Successfully fetched quote from Gemini API');
+        
       } catch (error) {
-        setMotivationQuote(defaultQuote);
+        console.error('❌ Error fetching quote from Gemini API:', error);
+        
+        // Fallback to default quotes
+        const fallbackQuote = getFallbackQuote();
+        setMotivationQuote(fallbackQuote);
+        
+        // Optional: Hiển thị thông báo lỗi cho user (không bắt buộc)
+        // console.log('Using fallback quote due to API error');
       }
     };
 
