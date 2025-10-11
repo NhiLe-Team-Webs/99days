@@ -43,19 +43,30 @@ create table if not exists public.members (
   email text unique,
   name text,
   status text default 'active' not null,
-  start_date date not null,
+  drop_reason text,
+  start_date date not null default current_date,
+  applicant_id uuid references public.applicants(id),
   created_at timestamptz default now()
 );
 
 create table if not exists public.applicants (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
-  name text not null,
-  phone text,
+  ho_ten text not null,
+  so_dien_thoai text,
+  telegram text,
+  nam_sinh int,
+  ly_do text,
+  dong_y boolean default false,
   status text default 'pending' not null,
-  created_at timestamptz default now()
+  approved_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 ```
+
+> 💡 Các cột tiếng Việt (`ho_ten`, `so_dien_thoai`, …) khớp với payload mà Landing Page gửi từ form đăng ký. Bạn có thể đổi tên
+> chúng nếu muốn nhưng cần cập nhật lại ở `src/lib/api.ts`.
 
 ## 4. Chính sách bảo mật (RLS)
 
@@ -98,5 +109,28 @@ Nếu gặp lỗi:
 - Kiểm tra Console của trình duyệt để biết thông báo chi tiết.
 - Xác nhận biến môi trường Supabase đã được cấu hình chính xác.
 - Đảm bảo các policy RLS cho phép thao tác `select` cần thiết.
+
+## 6. Quy trình duyệt đơn và nâng cấp thành viên
+
+1. **Ứng viên đăng ký** trên Landing Page → bản ghi mới được thêm vào bảng `applicants` với trạng thái `pending`.
+2. **Admin kiểm tra hồ sơ** tại Supabase (hoặc công cụ quản trị tuỳ chỉnh). Khi quyết định chấp nhận, cập nhật trường `status`
+   thành `approved` và (tuỳ chọn) điền `approved_at`.
+3. **Tạo tài khoản Supabase** cho ứng viên bằng tính năng "Invite user" trong phần Authentication hoặc thông qua Admin API.
+   Khi người dùng hoàn thành đặt mật khẩu, một dòng mới sẽ xuất hiện trong `auth.users`.
+4. **Chèn bản ghi vào bảng `members`** để cấp quyền truy cập Dashboard. Có thể chạy truy vấn sau trong SQL Editor:
+
+   ```sql
+   insert into public.members (id, email, name, applicant_id)
+   select u.id, a.email, a.ho_ten, a.id
+   from auth.users u
+   join public.applicants a on a.email = u.email
+   where a.status = 'approved'
+     and not exists (
+       select 1 from public.members m where m.id = u.id
+     );
+   ```
+
+   Truy vấn trên đảm bảo chỉ những ứng viên đã được duyệt và chưa có hồ sơ thành viên mới được thêm vào bảng `members`.
+5. Sau khi bản ghi `members` xuất hiện, người dùng có thể đăng nhập bình thường bằng email/mật khẩu hoặc Google.
 
 Hoàn thành! Ứng dụng hiện đã sẵn sàng đăng nhập và khôi phục mật khẩu thông qua Supabase.

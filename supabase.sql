@@ -4,10 +4,16 @@
 CREATE TABLE public.applicants (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   email text NOT NULL UNIQUE,
-  name text NOT NULL,
-  phone text,
+  ho_ten text NOT NULL,
+  so_dien_thoai text,
+  telegram text,
+  nam_sinh integer,
+  ly_do text,
+  dong_y boolean DEFAULT false,
   status text NOT NULL DEFAULT 'pending'::text,
+  approved_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT applicants_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.daily_workouts (
@@ -44,7 +50,8 @@ CREATE TABLE public.members (
   name text,
   status text NOT NULL DEFAULT 'active'::text,
   drop_reason text,
-  start_date date NOT NULL,
+  start_date date NOT NULL DEFAULT CURRENT_DATE,
+  applicant_id uuid REFERENCES public.applicants(id),
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT members_pkey PRIMARY KEY (id),
   CONSTRAINT members_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
