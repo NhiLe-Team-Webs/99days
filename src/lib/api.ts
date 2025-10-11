@@ -6,20 +6,40 @@ export interface Applicant {
   email: string;
   so_dien_thoai: string;
   telegram: string;
-  nam_sinh: string;
+  nam_sinh: number | null;
   ly_do: string;
   dong_y: boolean;
   status?: 'pending' | 'approved' | 'rejected';
   created_at?: string;
 }
 
-// Gửi đơn đăng ký
-export const submitApplication = async (data: Omit<Applicant, 'id' | 'status' | 'created_at'>) => {
+export type ApplicantFormInput = Omit<Applicant, 'id' | 'status' | 'created_at' | 'nam_sinh'> & {
+  nam_sinh: string | number;
+};
+
+export const submitApplication = async (data: ApplicantFormInput) => {
+  const rawNamSinh = data.nam_sinh;
+  const namSinhValue =
+    typeof rawNamSinh === 'number'
+      ? rawNamSinh
+      : rawNamSinh.trim() === ''
+      ? Number.NaN
+      : Number(rawNamSinh);
+
+  const currentYear = new Date().getFullYear();
+  const isValidNamSinh =
+    Number.isInteger(namSinhValue) && namSinhValue >= 1900 && namSinhValue <= currentYear;
+
+  if (!isValidNamSinh) {
+    throw new Error('Nam sinh khong hop le');
+  }
+
   const { data: result, error } = await supabase
     .from('applicants')
     .insert([
       {
         ...data,
+        nam_sinh: namSinhValue,
         status: 'pending'
       }
     ])
@@ -30,7 +50,7 @@ export const submitApplication = async (data: Omit<Applicant, 'id' | 'status' | 
 };
 
 export const checkEmailExists = async (email: string) => {
-  console.log('Đang kiểm tra email:', email); // 🔍 Debug
+  console.log('Dang kiem tra email:', email);
 
   const { data: applicants, error: error1 } = await supabase
     .from('applicants')
@@ -39,11 +59,11 @@ export const checkEmailExists = async (email: string) => {
     .limit(1);
 
   if (error1) {
-    console.error('Lỗi query applicants:', error1);
+    console.error('Loi query applicants:', error1);
     throw error1;
   }
 
-  console.log('Kết quả applicants:', applicants); // 📊
+  console.log('Ket qua applicants:', applicants);
 
   if (applicants.length > 0) return true;
 
@@ -54,11 +74,11 @@ export const checkEmailExists = async (email: string) => {
     .limit(1);
 
   if (error2) {
-    console.error('Lỗi query members:', error2);
+    console.error('Loi query members:', error2);
     throw error2;
   }
 
-  console.log('Kết quả members:', members); // 📊
+  console.log('Ket qua members:', members);
 
   return members.length > 0;
 };
