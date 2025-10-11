@@ -30,8 +30,8 @@
 - Bang dieu khien goi Supabase de lay thong tin thanh vien, tinh toan tien do theo `startDate`, tao cau noi dong luc qua `generateMotivationalQuote` va cap nhat UI (badges, dem nguoc, thong bao).
 
 ## Ghi chu van hanh
-- Dien cac bien moi truong trong `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) truoc khi chay `npm run dev`.
-- Su dung cung mot co so du lieu voi ung dung admin de dong bo thong tin applicants/members.
+- Dien cac bien moi truong trong `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`) truoc khi chay `npm run dev`.
+- Su dung cung mot co so du lieu voi ung dung admin de dong bo thong tin applicants/members va dam bao email da duoc duyet moi dang nhap thanh cong.
 
 ## Dinh huong mo rong
 - Tich hop thong bao email hoac Telegram khi ho so duoc duyet.
