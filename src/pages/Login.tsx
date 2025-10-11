@@ -45,31 +45,36 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      // 1. Đăng nhập bằng email/password
-      const {  error } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) throw error;
+      if (signInError) {
+        throw signInError;
+      }
 
-      // 2. Kiểm tra xem email có trong bảng members không
-      const {  member, error: memberError } = await supabase
+      const { data: member, error: memberError } = await supabase
         .from('members')
         .select('id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
       if (memberError || !member) {
+        await supabase.auth.signOut();
         throw new Error('Email chưa được duyệt tham gia chương trình');
       }
 
-      // 3. Chuyển đến dashboard
+      toast({
+        title: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay lại 99 Days with NhiLe!"
+      });
+
       navigate('/dashboard');
     } catch (error: any) {
       toast({
         title: "Lỗi đăng nhập",
-        description: error.message,
+        description: error.message ?? "Không thể đăng nhập. Vui lòng thử lại.",
         variant: "destructive"
       });
     }
