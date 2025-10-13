@@ -1,7 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -257,11 +256,50 @@ const Sidebar = React.forwardRef<
 )
 Sidebar.displayName = "Sidebar"
 
+const ExpandSidebarIcon = React.forwardRef<
+  SVGSVGElement,
+  React.SVGProps<SVGSVGElement>
+>(({ className, ...props }, ref) => (
+  <svg
+    ref={ref}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 -960 960 960"
+    fill="currentColor"
+    className={cn("h-4 w-4", className)}
+    aria-hidden="true"
+    focusable="false"
+    {...props}
+  >
+    <path d="M360-120v-720h80v720h-80Zm160-160v-400l200 200-200 200Z" />
+  </svg>
+))
+ExpandSidebarIcon.displayName = "ExpandSidebarIcon"
+
+const CollapseSidebarIcon = React.forwardRef<
+  SVGSVGElement,
+  React.SVGProps<SVGSVGElement>
+>(({ className, ...props }, ref) => (
+  <svg
+    ref={ref}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 -960 960 960"
+    fill="currentColor"
+    className={cn("h-4 w-4", className)}
+    aria-hidden="true"
+    focusable="false"
+    {...props}
+  >
+    <path d="M440-280v-400L240-480l200 200Zm80 160h80v-720h-80v720Z" />
+  </svg>
+))
+CollapseSidebarIcon.displayName = "CollapseSidebarIcon"
+
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, state } = useSidebar()
+  const Icon = state === "collapsed" ? ExpandSidebarIcon : CollapseSidebarIcon
 
   return (
     <Button
@@ -276,8 +314,10 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
+      <Icon />
+      <span className="sr-only">
+        {state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
+      </span>
     </Button>
   )
 })
