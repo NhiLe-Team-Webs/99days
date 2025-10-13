@@ -1,9 +1,10 @@
 // src/pages/Dashboard.tsx
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateMotivationalQuote } from '@/lib/gemini';
 import { fetchTodayZoomLink } from '@/lib/api';
+import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
@@ -157,20 +158,6 @@ export default function Dashboard() {
     getUserInfo();
   }, [navigate]);
 
-  // Xử lý đăng xuất
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-      } else {
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-  };
-
   // useEffect để cập nhật countdown và progress
   useEffect(() => {
     const now = new Date();
@@ -267,40 +254,22 @@ export default function Dashboard() {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang tải thông tin...</p>
+      <AuthenticatedLayout title="Trang điều khiển" description="Tổng quan hành trình 99 ngày của bạn">
+        <div className="flex h-full items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-20 w-20 animate-spin rounded-full border-b-2 border-primary"></div>
+            <p className="mt-4 text-muted-foreground">Đang tải thông tin...</p>
+          </div>
         </div>
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-gray-900">
-            <span className="text-primary">99 Days</span> with NhiLe
-          </Link>
-          <nav className="flex space-x-6 items-center">
-            <span className="hidden sm:block text-gray-700">
-              Chào mừng, <span className="font-semibold text-primary">{userName}</span>!
-            </span>
-            <button
-              onClick={handleLogout}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-full hover:bg-primary/90 transition duration-300 text-sm font-medium"
-            >
-              Đăng xuất
-            </button>
-          </nav>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-6 py-12">
+    <AuthenticatedLayout title="Trang điều khiển" description={`Chào mừng ${userName || 'bạn'} trở lại hành trình 99 ngày`}>
+      <div className="mx-auto max-w-6xl space-y-10">
         {/* Động lực */}
-        <div className="bg-gradient-to-r from-primary to-orange-500 text-white p-6 rounded-xl shadow-lg mb-8 text-center">
+        <div className="mb-2 rounded-xl bg-gradient-to-r from-primary to-orange-500 p-6 text-center text-white shadow-lg">
           <h2 className="text-lg font-semibold mb-2">🔥 Động lực cho hôm nay 🔥</h2>
           {loading ? (
             <div className="h-6 bg-yellow-200 rounded animate-pulse"></div>
@@ -309,15 +278,15 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Cột chính */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="space-y-8 lg:col-span-2">
             {/* Buổi tập */}
-            <div className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary">
+            <div className="rounded-xl border-t-4 border-primary bg-white p-8 shadow-lg">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Buổi tập sáng nay đã sẵn sàng!</h2>
               <p className="text-gray-600 mb-6">Hãy tham gia đúng giờ vào lúc 4:45 sáng để không bỏ lỡ khoảnh khắc nào nhé.</p>
 
-              <div className="bg-gray-50 p-6 rounded-lg text-center mb-6">
+              <div className="mb-6 rounded-lg bg-gray-50 p-6 text-center">
                 <p className="text-gray-500 mb-2">Buổi tập tiếp theo sẽ bắt đầu sau:</p>
                 <div className="text-4xl font-bold text-primary tracking-wider">{sessionTime}</div>
               </div>
@@ -328,7 +297,7 @@ export default function Dashboard() {
                   href={zoomLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full text-center bg-primary text-primary-foreground px-8 py-4 rounded-lg text-xl font-semibold hover:bg-primary/90 transition duration-300 transform hover:scale-105 shadow-md"
+                  className="w-full transform rounded-lg bg-primary px-8 py-4 text-center text-xl font-semibold text-primary-foreground shadow-md transition duration-300 hover:scale-105 hover:bg-primary/90"
                 >
                   🚀 THAM GIA BUỔI TẬP 4:45 SÁNG HÔM NAY
                 </a>
@@ -336,20 +305,20 @@ export default function Dashboard() {
                 <button
                   type="button"
                   disabled
-                  className="text-center bg-gray-300 text-white px-8 py-4 rounded-lg text-xl font-semibold"
+                  className="rounded-lg bg-gray-300 px-8 py-4 text-center text-xl font-semibold text-white"
                 >
                   {zoomLoading ? "Dang tai link Zoom..." : "Link se som duoc cap nhat"}
                 </button>
               )}
               </div>
-              
-              <p className="text-center text-xs text-gray-500 mt-3">Lưu ý: Link sẽ được cập nhật mỗi ngày.</p>
+
+              <p className="mt-3 text-center text-xs text-gray-500">Lưu ý: Link sẽ được cập nhật mỗi ngày.</p>
             </div>
 
             {/* Huy hiệu */}
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h3 className="text-xl font-bold mb-4">Huy hiệu đã đạt được</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <div className="rounded-xl bg-white p-6 shadow-lg">
+              <h3 className="mb-4 text-xl font-bold">Huy hiệu đã đạt được</h3>
+              <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
                 {badgeConfigs.map((badge) => {
                   const isUnlocked = badges[badge.day as keyof typeof badges];
                   return (
@@ -358,7 +327,7 @@ export default function Dashboard() {
                       className={`badge ${isUnlocked ? 'unlocked' : 'locked'}`}
                     >
                       <div
-                        className={`rounded-full w-24 h-24 mx-auto flex items-center justify-center ${
+                        className={`mx-auto flex h-24 w-24 items-center justify-center rounded-full ${
                           isUnlocked
                             ? 'bg-gradient-to-br from-white-100 to-orange-100 shadow-lg border-2 border-yellow-300'
                             : 'bg-gray-200'
@@ -366,13 +335,13 @@ export default function Dashboard() {
                       >
                         {isUnlocked ? badge.unlockedIcon : badge.lockedIcon}
                       </div>
-                      <p className={`font-semibold mt-2 ${isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>
+                      <p className={`mt-2 font-semibold ${isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>
                         {badge.name}
                       </p>
                       <p className="text-sm text-gray-500">{badge.day} ngày</p>
                       {isUnlocked && (
                         <div className="mt-1">
-                          <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          <span className="inline-block rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">
                             ✓ Đã đạt được
                           </span>
                         </div>
@@ -387,18 +356,18 @@ export default function Dashboard() {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Đếm ngược 99 ngày */}
-            <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <h3 className="text-xl font-bold mb-2">Hành Trình 99 Ngày</h3>
-              <p className="text-gray-600 mb-4">Số ngày còn lại để chinh phục:</p>
+            <div className="rounded-xl bg-white p-6 text-center shadow-lg">
+              <h3 className="mb-2 text-xl font-bold">Hành Trình 99 Ngày</h3>
+              <p className="mb-4 text-gray-600">Số ngày còn lại để chinh phục:</p>
               <div className="text-6xl font-extrabold text-primary">{countdown99}</div>
               <div className="mt-6">
-                <div className="flex justify-between mb-1">
+                <div className="mb-1 flex justify-between">
                   <span className="text-base font-medium text-primary">Tiến trình</span>
                   <span className="text-sm font-medium text-primary">{progressText}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-4">
+                <div className="h-4 w-full rounded-full bg-gray-200">
                   <div
-                    className="bg-primary h-4 rounded-full transition-all duration-500"
+                    className="h-4 rounded-full bg-primary transition-all duration-500"
                     style={{ width: `${progressWidth}%` }}
                   ></div>
                 </div>
@@ -406,8 +375,8 @@ export default function Dashboard() {
             </div>
 
             {/* Thông báo */}
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h3 className="text-xl font-bold mb-4">Thông báo</h3>
+            <div className="rounded-xl bg-white p-6 shadow-lg">
+              <h3 className="mb-4 text-xl font-bold">Thông báo</h3>
               <div className="space-y-4">
                 <div className="border-l-4 border-red-200 pl-4">
                   <p className="font-semibold">Chủ đề tuần này: Rèn luyện sức bền</p>
@@ -418,8 +387,8 @@ export default function Dashboard() {
             </div>
 
             {/* Truy cập nhanh */}
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h3 className="text-xl font-bold mb-4">Truy cập nhanh</h3>
+            <div className="rounded-xl bg-white p-6 shadow-lg">
+              <h3 className="mb-4 text-xl font-bold">Truy cập nhanh</h3>
               <ul className="space-y-3">
                 <li><a href="#" className="text-primary hover:underline">Thư viện bài tập</a></li>
                 <li><a href="#" className="text-primary hover:underline">Hướng dẫn dinh dưỡng</a></li>
@@ -428,7 +397,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   );
 }
