@@ -35,6 +35,7 @@ before update on public.applicants
 for each row
 execute function public.set_updated_at();
 
+-- Members approved for the 99 days program
 create table if not exists public.members (
   id uuid primary key default gen_random_uuid(),
   email text not null unique,
@@ -84,6 +85,14 @@ to service_role
 using (true)
 with check (true);
 
+drop policy if exists "Allow applicant status updates" on public.applicants;
+create policy "Allow applicant status updates"
+on public.applicants
+for update
+to anon, authenticated
+using (true)
+with check (true);
+
 -- Members policies ---------------------------------------------------------
 drop policy if exists "Allow public email lookups" on public.members;
 create policy "Allow public email lookups"
@@ -115,15 +124,7 @@ to service_role
 using (true)
 with check (true);
 
-drop policy if exists "Allow applicant status updates" on public.applicants;
-create policy "Allow applicant status updates"
-on public.applicants
-for update
-to anon, authenticated
-using (true)
-with check (true);
-
--- Biết ơn -------------------------------------------------------------------
+-- Gratitude journal entries -------------------------------------------------
 create table if not exists public.gratitude_entries (
   id uuid primary key default gen_random_uuid(),
   member_id uuid not null references public.members (id) on delete cascade,
@@ -169,7 +170,7 @@ with check (
 create index if not exists gratitude_entries_member_date_idx
   on public.gratitude_entries (member_id, entry_date);
 
--- Trả bài --------------------------------------------------------------------
+-- Homework submissions ------------------------------------------------------
 create table if not exists public.homework_submissions (
   id uuid primary key default gen_random_uuid(),
   member_id uuid not null references public.members (id) on delete cascade,
@@ -215,7 +216,7 @@ with check (
 create index if not exists homework_submissions_member_date_idx
   on public.homework_submissions (member_id, submission_date);
 
--- Cập nhật tiến độ ----------------------------------------------------------
+-- Progress tracking ---------------------------------------------------------
 create table if not exists public.progress_updates (
   id uuid primary key default gen_random_uuid(),
   member_id uuid not null references public.members (id) on delete cascade,
@@ -262,3 +263,4 @@ with check (
 
 create index if not exists progress_updates_member_date_idx
   on public.progress_updates (member_id, recorded_for desc);
+

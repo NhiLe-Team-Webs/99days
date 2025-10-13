@@ -2,41 +2,27 @@ import { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/components/AuthenticatedLayout";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { useCurrentMember } from "@/hooks/use-current-member";
+import { fetchHomeworkSubmissions, upsertHomeworkSubmission } from "@/lib/member-data";
 
 interface HomeworkEntry {
   date: string;
-  lesson: string;
   submission: string;
-  mentorNotes: string;
+  updatedAt: string;
 }
 
-const seedHomework: HomeworkEntry[] = [
-  {
-    date: new Date().toISOString().split("T")[0],
-    lesson: "Thói quen buổi sáng #12",
-    submission: "Tổng hợp 5 bài tập cardio đã hoàn thành, kèm video ghi lại động tác chuẩn.",
-    mentorNotes: "Tiếp tục giữ nhịp độ như vậy, chú ý thêm vào phần khởi động khớp cổ tay.",
-  },
-  {
-    date: new Date(Date.now() - 2 * 86400000).toISOString().split("T")[0],
-    lesson: "Ghi chép dinh dưỡng ngày 07",
-    submission: "Chia sẻ thực đơn 3 bữa và cảm nhận cơ thể trong ngày.",
-    mentorNotes: "Bổ sung thêm trái cây vào bữa phụ chiều để cải thiện năng lượng.",
-  },
-];
-
 function formatISODate(date?: Date) {
-  if (!date) return new Date().toISOString().split("T")[0];
+  if (!date) return new Date().toISOString().split("T")[0]!;
   const zonedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return zonedDate.toISOString().split("T")[0];
+  return zonedDate.toISOString().split("T")[0]!;
 }
 
 function formatDisplayDate(date: string) {
-  return new Date(date + "T00:00:00").toLocaleDateString("vi-VN", {
+  return new Date(`${date}T00:00:00`).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -44,11 +30,16 @@ function formatDisplayDate(date: string) {
 }
 
 export default function Homework() {
-  const [entries, setEntries] = useState<HomeworkEntry[]>(seedHomework);
+  const { toast } = useToast();
+  const { member, loading: memberLoading, error: memberError } = useCurrentMember();
+
+  const [entries, setEntries] = useState<HomeworkEntry[]>([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [lesson, setLesson] = useState("");
   const [submission, setSubmission] = useState("");
-  const [mentorNotes, setMentorNotes] = useState("");
+
+  const today = formatISODate();
 
   const selectedEntry = useMemo(() => {
     const key = formatISODate(selectedDate);
@@ -56,54 +47,130 @@ export default function Homework() {
   }, [entries, selectedDate]);
 
   useEffect(() => {
+    if (!member) {
+      setEntries([]);
+      return;
+    }
+
+    let active = true;
+    setLoadingEntries(true);
+
+    fetchHomeworkSubmissions(member.id)
+      .then((data) => {
+        if (!active) return;
+        const mapped: HomeworkEntry[] = data.map((item) => ({
+          date: item.submission_date,
+          submission: item.submission ?? "",
+          updatedAt: item.updated_at,
+        }));
+        mapped.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+        setEntries(mapped);
+      })
+      .catch((error) => {
+        if (!active) return;
+        console.error("Failed to load homework submissions:", error);
+        toast({
+          variant: "destructive",
+          title: "Không thể tải bài nộp",
+          description: "Vui lòng thử lại sau.",
+        });
+      })
+      .finally(() => {
+        if (active) setLoadingEntries(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [member, toast]);
+
+  useEffect(() => {
     if (selectedEntry) {
-      setLesson(selectedEntry.lesson);
       setSubmission(selectedEntry.submission);
-      setMentorNotes(selectedEntry.mentorNotes);
     } else {
-      setLesson("");
       setSubmission("");
-      setMentorNotes("");
     }
   }, [selectedEntry]);
 
   const dayHasSubmission = useMemo(
-    () => entries.map((entry) => new Date(entry.date + "T00:00:00")),
-    [entries]
+    () =>
+      entries.map((entry) => {
+        const date = new Date(`${entry.date}T00:00:00`);
+        return date;
+      }),
+    [entries],
   );
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const key = formatISODate(selectedDate);
-    const nextEntry: HomeworkEntry = {
-      date: key,
-      lesson: lesson.trim(),
-      submission: submission.trim(),
-      mentorNotes: mentorNotes.trim(),
-    };
+  const isFormDisabled = memberLoading || loadingEntries || !member;
+  const isTodaySelected = selectedDate ? formatISODate(selectedDate) === today : false;
 
-    setEntries((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.date === key);
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = nextEntry;
-        return updated.sort((a, b) => (a.date < b.date ? 1 : -1));
-      }
-      return [...prev, nextEntry].sort((a, b) => (a.date < b.date ? 1 : -1));
-    });
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!member) return;
+
+    if (!isTodaySelected) {
+      toast({
+        variant: "destructive",
+        title: "Chỉ chỉnh sửa được ngày hôm nay",
+        description: "Bạn chỉ có thể cập nhật bài nộp của ngày hiện tại.",
+      });
+      return;
+    }
+
+    const trimmedSubmission = submission.trim();
+
+    if (!trimmedSubmission) {
+      toast({
+        variant: "destructive",
+        title: "Thiếu nội dung bài nộp",
+        description: "Vui lòng mô tả lại những gì bạn đã thực hành hoặc học được trong ngày.",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const saved = await upsertHomeworkSubmission(member.id, today, trimmedSubmission);
+      const updated: HomeworkEntry = {
+        date: saved.submission_date,
+        submission: saved.submission ?? "",
+        updatedAt: saved.updated_at,
+      };
+
+      setEntries((prev) => {
+        const filtered = prev.filter((entry) => entry.date !== updated.date);
+        return [updated, ...filtered].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+      });
+
+      toast({
+        title: "Đã lưu bài học trong ngày",
+        description: "Bạn đã cập nhật tiến trình học tập của mình thành công.",
+      });
+    } catch (error) {
+      console.error("Failed to save homework submission:", error);
+      toast({
+        variant: "destructive",
+        title: "Không thể lưu bài nộp",
+        description: "Vui lòng thử lại sau.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <AuthenticatedLayout
-      title="Trả bài hằng ngày"
-      description="Nộp kết quả học tập, cập nhật phản hồi từ mentor và theo dõi lịch sử luyện tập"
+      title="Trực nhật bài học"
+      description="Ghi lại kết quả luyện tập mỗi ngày và theo dõi phản hồi từ mentor."
       className="bg-transparent"
     >
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         <Card className="h-fit">
           <CardHeader>
             <CardTitle>Lịch nộp bài</CardTitle>
-            <CardDescription>Chọn ngày để xem nội dung đã nộp hoặc tiếp tục chỉnh sửa.</CardDescription>
+            <CardDescription>
+              Các ngày đã nộp bài sẽ được tô màu. Chọn ngày để xem lại hoặc cập nhật thêm chi tiết.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Calendar
@@ -112,9 +179,10 @@ export default function Homework() {
               onSelect={setSelectedDate}
               modifiers={{ submitted: dayHasSubmission }}
               modifiersClassNames={{ submitted: "bg-emerald-500 text-emerald-50 hover:bg-emerald-600" }}
+              disabled={isFormDisabled}
             />
             <p className="mt-4 text-sm text-muted-foreground">
-              Các ngày màu xanh lá là những lần bạn đã nộp bài. Bạn có thể cập nhật lại nhưng không thể xoá.
+              Những ngày màu xanh hiển thị các lần bạn đã nộp bài. Bạn có thể cập nhật lại nội dung nếu muốn.
             </p>
           </CardContent>
         </Card>
@@ -123,96 +191,35 @@ export default function Homework() {
           <Card>
             <CardHeader>
               <CardTitle>{selectedEntry ? "Cập nhật bài đã nộp" : "Tạo bài nộp mới"}</CardTitle>
-              <CardDescription>
-                Ngày {formatDisplayDate(formatISODate(selectedDate))} – hãy mô tả chi tiết kết quả luyện tập.
-              </CardDescription>
+              <CardDescription>Ngày {formatDisplayDate(formatISODate(selectedDate))}</CardDescription>
             </CardHeader>
             <CardContent>
+              {memberError ? (
+                <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+                  {memberError.message}
+                </div>
+              ) : null}
+              {loadingEntries ? (
+                <p className="text-sm text-muted-foreground">Đang tải bài nộp...</p>
+              ) : null}
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="space-y-2">
-                  <Label htmlFor="lesson">Chủ đề hoặc tên bài tập</Label>
-                  <Input
-                    id="lesson"
-                    value={lesson}
-                    onChange={(event) => setLesson(event.target.value)}
-                    placeholder="Ví dụ: Bài tập sức bền tuần 4"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="submission">Nội dung trả bài</Label>
+                  <Label htmlFor="submission">Nội dung bài nộp</Label>
                   <Textarea
                     id="submission"
                     value={submission}
                     onChange={(event) => setSubmission(event.target.value)}
-                    placeholder="Chia sẻ bạn đã thực hành như thế nào, cảm nhận ra sao và đính kèm đường dẫn nếu có"
-                    className="min-h-[140px]"
+                    placeholder="Chia sẻ những gì bạn đã thực hành, cảm nhận và ghi chú quan trọng trong ngày."
+                    className="min-h-[160px]"
+                    disabled={isFormDisabled || !isTodaySelected}
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="mentor-notes">Ghi chú từ mentor</Label>
-                  <Textarea
-                    id="mentor-notes"
-                    value={mentorNotes}
-                    onChange={(event) => setMentorNotes(event.target.value)}
-                    placeholder="Ghi lại lời nhắc hoặc phản hồi quan trọng để dễ dàng theo dõi"
-                    className="min-h-[100px]"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {selectedEntry ? "Bạn đang chỉnh sửa bài đã nộp." : "Bài mới sẽ tự động lưu sau khi bấm hoàn thành."}
-                  </span>
-                  <Button type="submit">Lưu nội dung trả bài</Button>
-                </div>
+                <Button type="submit" disabled={isFormDisabled || isSaving || !isTodaySelected}>
+                  {isSaving ? "Đang lưu..." : "Lưu nội dung bài nộp"}
+                </Button>
               </form>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Lịch sử trả bài</CardTitle>
-              <CardDescription>
-                Cùng xem lại các cột mốc quan trọng để điều chỉnh kế hoạch luyện tập phù hợp hơn.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {entries.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Bạn chưa nộp bài nào. Chọn ngày trên lịch để bắt đầu ghi lại thành quả nhé!
-                </p>
-              ) : (
-                entries.map((entry) => (
-                  <div key={entry.date} className="rounded-lg border border-border bg-card/50 p-4">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Ngày nộp</p>
-                        <p className="text-base font-semibold text-foreground">{formatDisplayDate(entry.date)}</p>
-                      </div>
-                      <span className="text-xs uppercase tracking-wide text-primary">Chỉ có thể chỉnh sửa</span>
-                    </div>
-                    <div className="mt-3 space-y-3 text-sm text-muted-foreground">
-                      <p>
-                        <span className="font-semibold text-foreground">Chủ đề: </span>
-                        {entry.lesson}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-foreground">Nội dung: </span>
-                        {entry.submission}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-foreground">Ghi chú mentor: </span>
-                        {entry.mentorNotes}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
             </CardContent>
           </Card>
         </div>

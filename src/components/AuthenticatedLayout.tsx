@@ -1,5 +1,5 @@
 import { ReactNode, useCallback } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +16,7 @@ import {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
@@ -24,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 const navigationItems = [
   {
-    label: "Trang điều khiển",
+    label: "Bảng điều khiển",
     to: "/dashboard",
     icon: LayoutDashboard,
   },
@@ -52,7 +53,38 @@ interface AuthenticatedLayoutProps {
   className?: string;
 }
 
+function ExpandSidebarIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#434343">
+      <path d="M360-120v-720h80v720h-80Zm160-160v-400l200 200-200 200Z" />
+    </svg>
+  );
+}
+
+function CollapseSidebarIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#434343">
+      <path d="M440-280v-400L240-480l200 200Zm80 160h80v-720h-80v720Z" />
+    </svg>
+  );
+}
+
 export function AuthenticatedLayout({
+  title,
+  description,
+  children,
+  className,
+}: AuthenticatedLayoutProps) {
+  return (
+    <SidebarProvider className="bg-muted/40">
+      <AuthenticatedLayoutContent title={title} description={description} className={className}>
+        {children}
+      </AuthenticatedLayoutContent>
+    </SidebarProvider>
+  );
+}
+
+function AuthenticatedLayoutContent({
   title,
   description,
   children,
@@ -60,6 +92,7 @@ export function AuthenticatedLayout({
 }: AuthenticatedLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { state, toggleSidebar } = useSidebar();
 
   const handleLogout = useCallback(async () => {
     try {
@@ -74,13 +107,25 @@ export function AuthenticatedLayout({
     }
   }, [navigate]);
 
+  const isCollapsed = state === "collapsed";
+
   return (
-    <SidebarProvider className="bg-muted/40">
+    <>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="border-b border-border px-4 py-4">
-          <span className="text-lg font-semibold text-sidebar-foreground">
-            99 Days Challenge
-          </span>
+        <SidebarHeader className="flex items-center justify-between border-b border-border px-3 py-3">
+          {!isCollapsed ? (
+            <span className="text-lg font-semibold text-sidebar-foreground">99 Days Challenge</span>
+          ) : (
+            <span className="sr-only">99 Days Challenge</span>
+          )}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="rounded-md border border-border bg-background p-1.5 transition hover:bg-muted"
+            aria-label={isCollapsed ? "Mở thanh điều hướng" : "Thu gọn thanh điều hướng"}
+          >
+            {isCollapsed ? <ExpandSidebarIcon /> : <CollapseSidebarIcon />}
+          </button>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
@@ -106,12 +151,16 @@ export function AuthenticatedLayout({
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarSeparator />
-        <SidebarFooter className="px-4 py-4">
-          <Button variant="outline" className="w-full" onClick={handleLogout}>
-            Đăng xuất
-          </Button>
-        </SidebarFooter>
+        {!isCollapsed ? (
+          <>
+            <SidebarSeparator />
+            <SidebarFooter className="px-4 py-4">
+              <Button variant="outline" className="w-full" onClick={handleLogout}>
+                Đăng xuất
+              </Button>
+            </SidebarFooter>
+          </>
+        ) : null}
         <SidebarRail />
       </Sidebar>
       <SidebarInset className="flex min-h-screen flex-col">
@@ -119,14 +168,12 @@ export function AuthenticatedLayout({
           <SidebarTrigger className="flex lg:hidden" />
           <div>
             <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-            {description ? (
-              <p className="text-sm text-muted-foreground">{description}</p>
-            ) : null}
+            {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
           </div>
         </header>
         <main className={cn("flex-1 px-6 py-6", className)}>{children}</main>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
 
