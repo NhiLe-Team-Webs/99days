@@ -1,22 +1,22 @@
-// src/pages/Login.tsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Kiểm tra session sau khi Google login
+  // Kiểm tra session sau khi đăng nhập bằng Google
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
       if (session) {
-        // Chuyển đến trang kiểm tra trạng thái
         navigate('/auth-status');
       }
     };
@@ -28,67 +28,72 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth-status` // 👈 Chuyển đến trang kiểm tra
+        redirectTo: `${window.location.origin}/auth-status`
       }
     });
 
     if (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể đăng nhập bằng Google. Vui lòng thử lại.",
-        variant: "destructive"
+        title: 'Lỗi',
+        description: 'Không thể đăng nhập bằng Google. Vui lòng thử lại.',
+        variant: 'destructive'
       });
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     try {
-      // 1. Đăng nhập bằng email/password
-      const {  error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      // 2. Kiểm tra xem email có trong bảng members không
-      const {  member, error: memberError } = await supabase
+      const { data: member, error: memberError } = await supabase
         .from('members')
         .select('id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
-      if (memberError || !member) {
-        throw new Error('Email chưa được duyệt tham gia chương trình');
+      if (memberError) {
+        throw memberError;
       }
 
-      // 3. Chuyển đến dashboard
+      if (!member) {
+        toast({
+          title: 'Đang chờ duyệt',
+          description: 'Email của bạn chưa được chấp nhận. Vui lòng xem trạng thái tài khoản.'
+        });
+        navigate('/auth-status');
+        return;
+      }
+
       navigate('/dashboard');
     } catch (error: any) {
       toast({
-        title: "Lỗi đăng nhập",
-        description: error.message,
-        variant: "destructive"
+        title: 'Lỗi đăng nhập',
+        description: error.message ?? 'Không thể đăng nhập. Vui lòng thử lại.',
+        variant: 'destructive'
       });
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      {/* Logo */}
       <div className="text-center mb-8">
         <Link to="/" className="text-3xl font-bold text-gray-900">
           <span className="text-primary">99 Days</span> with NhiLe
         </Link>
       </div>
 
-      {/* Login Card */}
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Tài Khoản</h2>
 
-        {/* Google Login Button */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -104,16 +109,13 @@ export default function Login() {
           <span className="text-gray-700 font-medium">Đăng nhập bằng Google</span>
         </button>
 
-        {/* Divider */}
         <div className="flex items-center my-4">
           <hr className="flex-grow border-gray-300" />
           <span className="mx-4 text-gray-500 text-sm">hoặc</span>
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        {/* Traditional Login Form */}
         <form onSubmit={handleSubmit}>
-          {/* Email */}
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -122,14 +124,13 @@ export default function Login() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               placeholder="email@example.com"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary/50 focus:border-primary outline-none transition-all"
               required
             />
           </div>
 
-          {/* Password */}
           <div className="mb-6">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Mật khẩu
@@ -138,14 +139,13 @@ export default function Login() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="********"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary/50 focus:border-primary outline-none transition-all"
               required
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-primary text-primary-foreground px-6 py-3 rounded-lg text-lg font-semibold hover:bg-primary/90 transition duration-300"
@@ -153,7 +153,6 @@ export default function Login() {
             Đăng Nhập
           </button>
 
-          {/* Forgot Password */}
           <div className="text-center mt-4">
             <Link to="/forgot-password" className="text-sm text-primary hover:underline">
               Quên mật khẩu?
@@ -162,7 +161,6 @@ export default function Login() {
         </form>
       </div>
 
-      {/* Register Link */}
       <div className="mt-6 text-center">
         <p className="text-gray-600">
           Chưa có tài khoản?{' '}
@@ -184,4 +182,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

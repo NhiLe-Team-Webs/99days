@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateMotivationalQuote } from '@/lib/gemini';
+import { fetchTodayZoomLink } from '@/lib/api';
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
@@ -19,6 +20,8 @@ export default function Dashboard() {
     66: false,
     99: false,
   });
+  const [zoomLink, setZoomLink] = useState<string | null>(null);
+  const [zoomLoading, setZoomLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -213,6 +216,21 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [startDate]);
 
+  useEffect(() => {
+    const getZoomLink = async () => {
+      try {
+        const link = await fetchTodayZoomLink();
+        setZoomLink(link);
+      } catch (error) {
+        console.error("Error fetching zoom link:", error);
+      } finally {
+        setZoomLoading(false);
+      }
+    };
+
+    getZoomLink();
+  }, []);
+
   // useEffect riêng để fetch quote khi đã có thông tin user
   useEffect(() => {
     const fetchMotivationQuote = async () => {
@@ -304,9 +322,27 @@ export default function Dashboard() {
                 <div className="text-4xl font-bold text-primary tracking-wider">{sessionTime}</div>
               </div>
 
-              <button className="w-full text-center bg-primary text-primary-foreground px-8 py-4 rounded-lg text-xl font-semibold hover:bg-primary/90 transition duration-300 transform hover:scale-105 shadow-md">
-                🚀 THAM GIA BUỔI TẬP 4:45 SÁNG
-              </button>
+              <div className="flex justify-center">
+              {zoomLink ? (
+                <a
+                  href={zoomLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full text-center bg-primary text-primary-foreground px-8 py-4 rounded-lg text-xl font-semibold hover:bg-primary/90 transition duration-300 transform hover:scale-105 shadow-md"
+                >
+                  🚀 THAM GIA BUỔI TẬP 4:45 SÁNG HÔM NAY
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="text-center bg-gray-300 text-white px-8 py-4 rounded-lg text-xl font-semibold"
+                >
+                  {zoomLoading ? "Dang tai link Zoom..." : "Link se som duoc cap nhat"}
+                </button>
+              )}
+              </div>
+              
               <p className="text-center text-xs text-gray-500 mt-3">Lưu ý: Link sẽ được cập nhật mỗi ngày.</p>
             </div>
 

@@ -4,7 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 
 const AuthStatusHandler = () => {
-  const [status, setStatus] = useState<'checking' | 'not-registered' | 'pending' | 'rejected' | 'approved'>('checking');
+  const [status, setStatus] = useState<
+    | 'checking'
+    | 'not-registered'
+    | 'pending'
+    | 'rejected'
+    | 'approved-awaiting'
+    | 'approved'
+  >('checking');
   const [userEmail, setUserEmail] = useState('');
   const navigate = useNavigate();
 
@@ -36,7 +43,7 @@ const AuthStatusHandler = () => {
       // 2. Kiểm tra trong bảng applicants
       const { data: applicant, error } = await supabase
         .from('applicants')
-        .select('status')
+        .select('status, approved_at')
         .eq('email', email)
         .maybeSingle();
 
@@ -45,7 +52,12 @@ const AuthStatusHandler = () => {
         return;
       }
 
-      setStatus(applicant.status as any);
+      if (applicant.status === 'approved') {
+        setStatus('approved-awaiting');
+        return;
+      }
+
+      setStatus(applicant.status as 'pending' | 'rejected');
     };
 
     checkUserStatus();
@@ -117,6 +129,27 @@ const AuthStatusHandler = () => {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-red-800">
                 <strong>Gợi ý:</strong> Bạn có thể đăng ký lại sau 7 ngày.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'approved-awaiting':
+        return (
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Đã được duyệt</h1>
+            <p className="text-gray-600 mb-6">
+              Đơn đăng ký của bạn đã được chấp nhận. Admin sẽ kích hoạt tài khoản thành viên trong ít phút nữa.
+            </p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-left">
+              <p className="text-sm text-green-800">
+                <strong>Bước tiếp theo:</strong> Sau khi tài khoản thành viên được tạo, bạn sẽ nhận email hướng dẫn đặt mật khẩu.
+                Vui lòng thử đăng nhập lại hoặc liên hệ admin nếu chưa nhận được email.
               </p>
             </div>
           </div>
