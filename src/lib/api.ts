@@ -82,3 +82,24 @@ export const checkEmailExists = async (email: string) => {
 
   return members.length > 0;
 };
+
+export const fetchTodayZoomLink = async (): Promise<string | null> => {
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data, error } = await supabase
+    .from('daily_zoom_links')
+    .select('zoom_link:zoom_links(url)')
+    .eq('scheduled_for', today)
+    .maybeSingle<{ zoom_link: { url: string } | null }>();
+
+  if (error) {
+    if (error.code === 'PGRST205') {
+      console.warn("Bang 'daily_zoom_links' chua duoc tao. Vui long chay supabase.sql.");
+      return null;
+    }
+
+    throw error;
+  }
+
+  return data?.zoom_link?.url ?? null;
+};
