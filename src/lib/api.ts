@@ -13,6 +13,12 @@ export interface Applicant {
   created_at?: string;
 }
 
+export interface AdminSetting {
+  key: string;
+  value: string;
+  updated_at: string;
+}
+
 export type ApplicantFormInput = Omit<Applicant, 'id' | 'status' | 'created_at' | 'nam_sinh'> & {
   nam_sinh: string | number;
 };
@@ -102,4 +108,23 @@ export const fetchTodayZoomLink = async (): Promise<string | null> => {
   }
 
   return data?.zoom_link?.url ?? null;
+};
+
+export const getAdminProgramStartDate = async (): Promise<string | null> => {
+  const { data, error } = await supabase
+    .from('admin_settings')
+    .select('value')
+    .eq('key', 'program_start_date')
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST205') {
+      console.warn("Table 'admin_settings' not found. Returning default start date.");
+      return null;
+    }
+    console.error("Error fetching program start date:", error);
+    throw error;
+  }
+
+  return data?.value ?? null;
 };
