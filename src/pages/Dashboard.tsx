@@ -5,6 +5,14 @@ import { supabase } from '@/lib/supabase';
 import { generateMotivationalQuote } from '@/lib/gemini';
 import { fetchTodayZoomLink } from '@/lib/api';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
+import { workoutHistory } from '@/mock/workouts';
+
+function formatISODate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
@@ -28,6 +36,16 @@ export default function Dashboard() {
 
   // Cấu hình: Ngày bắt đầu thử thách
   const startDate = new Date('2025-05-10T00:00:00');
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowISO = formatISODate(tomorrow);
+  const tomorrowWorkout = workoutHistory.find((entry) => entry.date === tomorrowISO);
+  const tomorrowLabel = new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+  }).format(tomorrow);
 
   // Badge configurations with new SVG icons
   const badgeConfigs = [
@@ -112,7 +130,7 @@ export default function Dashboard() {
         console.log('✅ Session user email:', userEmail);
 
         // Query KHÔNG có nam_sinh
-        let { data: memberData, error: memberError } = await supabase
+        const { data: memberData, error: memberError } = await supabase
           .from('members')
           .select('ho_ten, email, telegram, so_dien_thoai')
           .eq('email', userEmail)
@@ -378,10 +396,44 @@ export default function Dashboard() {
             <div className="rounded-xl bg-white p-6 shadow-lg">
               <h3 className="mb-4 text-xl font-bold">Thông báo</h3>
               <div className="space-y-4">
-                <div className="border-l-4 border-red-200 pl-4">
-                  <p className="font-semibold">Chủ đề tuần này: Rèn luyện sức bền</p>
-                  <p className="text-sm text-gray-600">Hãy chuẩn bị tinh thần cho các bài tập cardio!</p>
-                  <span className="text-xs text-gray-400">20/08/2024</span>
+                <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4">
+                  <p className="font-semibold text-primary">Lịch tập ngày mai ({tomorrowLabel})</p>
+                  {tomorrowWorkout ? (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm text-gray-700">
+                        Chủ đề: <span className="font-medium text-gray-900">{tomorrowWorkout.title}</span>
+                      </p>
+                      {tomorrowWorkout.description ? (
+                        <p className="text-sm text-gray-600">{tomorrowWorkout.description}</p>
+                      ) : null}
+                      <a
+                        href={tomorrowWorkout.videoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                      >
+                        Xem video hướng dẫn
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          <path d="M7 17L17 7" />
+                          <path d="M7 7h10v10" />
+                        </svg>
+                      </a>
+                      <p className="text-xs text-gray-500">Đừng quên chuẩn bị dụng cụ từ tối nay nhé!</p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-600">
+                      Lịch tập cho ngày mai sẽ được cập nhật sớm. Hãy kiểm tra lại vào cuối ngày hôm nay để chuẩn bị chu đáo.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

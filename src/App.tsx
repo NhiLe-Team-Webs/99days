@@ -11,6 +11,7 @@ import AuthStatusHandler from "./components/AuthStatusHandler";
 import Gratitude from "./pages/Gratitude";
 import Homework from "./pages/Homework";
 import Progress from "./pages/Progress";
+import Workouts from "./pages/Workouts";
 
 const App = () => (
   <BrowserRouter>
@@ -50,6 +51,14 @@ const App = () => (
         element={
           <ProtectedRoute>
             <Progress />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/workouts"
+        element={
+          <ProtectedRoute>
+            <Workouts />
           </ProtectedRoute>
         }
       />
