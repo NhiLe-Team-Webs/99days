@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateMotivationalQuote } from '@/lib/gemini';
-import { fetchTodayZoomLink } from '@/lib/api';
+import { fetchTodayZoomLink, getAdminProgramStartDate } from '@/lib/api';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { workoutHistory } from '@/mock/workouts';
 
@@ -31,11 +31,9 @@ export default function Dashboard() {
   });
   const [zoomLink, setZoomLink] = useState<string | null>(null);
   const [zoomLoading, setZoomLoading] = useState(true);
+  const [programStartDate, setProgramStartDate] = useState<Date | null>(null);
 
   const navigate = useNavigate();
-
-  // Cấu hình: Ngày bắt đầu thử thách
-  const startDate = new Date('2025-05-10T00:00:00');
 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -176,13 +174,34 @@ export default function Dashboard() {
     getUserInfo();
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchProgramStartDate = async () => {
+      try {
+        const dateString = await getAdminProgramStartDate();
+        if (dateString) {
+          setProgramStartDate(new Date(dateString));
+        } else {
+          // Fallback to a default date if not set by admin
+          setProgramStartDate(new Date('2025-05-10T00:00:00'));
+        }
+      } catch (error) {
+        console.error("Error fetching admin program start date:", error);
+        setProgramStartDate(new Date('2025-05-10T00:00:00')); // Fallback on error
+      }
+    };
+
+    fetchProgramStartDate();
+  }, []);
+
   // useEffect để cập nhật countdown và progress
   useEffect(() => {
-    const now = new Date();
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 99);
+    if (!programStartDate) return;
 
-    const daysRemaining = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+    const now = new Date();
+    const endDate = new Date(programStartDate);
+    endDate.setDate(programStartDate.getDate() + 99);
+
+    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
     const currentDay = Math.max(1, 99 - daysRemaining + 1);
 
     // 1. Cập nhật countdown 99 ngày
@@ -207,7 +226,7 @@ export default function Dashboard() {
       targetTime.setHours(4, 45, 0, 0);
       if (now > targetTime) targetTime.setDate(targetTime.getDate() + 1);
 
-      const diff = targetTime - now;
+      const diff = targetTime.getTime() - now.getTime();
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -219,7 +238,7 @@ export default function Dashboard() {
     const interval = setInterval(updateSessionCountdown, 1000);
 
     return () => clearInterval(interval);
-  }, [startDate]);
+  }, [programStartDate]);
 
   useEffect(() => {
     const getZoomLink = async () => {
@@ -270,7 +289,7 @@ export default function Dashboard() {
   }, [userName, userEmail]); // Chỉ chạy khi có đủ thông tin user
 
   // Loading state
-  if (loading) {
+  if (loading || programStartDate === null) {
     return (
       <AuthenticatedLayout title="Trang điều khiển" description="Tổng quan hành trình 99 ngày của bạn">
         <div className="flex h-full items-center justify-center">
