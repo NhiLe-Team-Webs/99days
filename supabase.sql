@@ -224,12 +224,24 @@ create table if not exists public.progress_updates (
   recorded_for date not null default current_date,
   weight numeric(5,2) not null,
   height numeric(5,2) not null,
+  waist numeric(5,2),
+  bust numeric(5,2),
+  hips numeric(5,2),
   note text,
   photo_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint progress_unique_per_day unique (member_id, recorded_for)
 );
+
+alter table public.progress_updates
+  add column if not exists waist numeric(5,2);
+
+alter table public.progress_updates
+  add column if not exists bust numeric(5,2);
+
+alter table public.progress_updates
+  add column if not exists hips numeric(5,2);
 
 drop trigger if exists progress_updates_set_updated_at on public.progress_updates;
 create trigger progress_updates_set_updated_at
