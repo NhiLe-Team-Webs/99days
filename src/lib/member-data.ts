@@ -27,6 +27,9 @@ export interface ProgressUpdateRecord {
   recorded_for: string;
   weight: number;
   height: number;
+  waist: number | null;
+  bust: number | null;
+  hips: number | null;
   note: string | null;
   photo_url: string | null;
   created_at: string;
@@ -95,7 +98,7 @@ export async function upsertHomeworkSubmission(memberId: string, submissionDate:
 export async function fetchProgressUpdates(memberId: string): Promise<ProgressUpdateRecord[]> {
   const { data, error } = await supabase
     .from("progress_updates")
-    .select("id, member_id, recorded_at, recorded_for, weight, height, note, photo_url, created_at, updated_at")
+    .select("id, member_id, recorded_at, recorded_for, weight, height, waist, bust, hips, note, photo_url, created_at, updated_at")
     .eq("member_id", memberId)
     .order("recorded_for", { ascending: false })
     .order("recorded_at", { ascending: false });
@@ -109,6 +112,9 @@ export async function upsertProgressUpdate(
   recordedFor: string,
   weight: number,
   height: number,
+  waist: number | null,
+  bust: number | null,
+  hips: number | null,
   photoUrl: string | null,
 ) {
   const { data, error } = await supabase
@@ -119,14 +125,45 @@ export async function upsertProgressUpdate(
         recorded_for: recordedFor,
         weight,
         height,
+        waist,
+        bust,
+        hips,
         note: null,
         photo_url: photoUrl,
       },
       { onConflict: "member_id,recorded_for" },
     )
-    .select("id, member_id, recorded_at, recorded_for, weight, height, note, photo_url, created_at, updated_at")
+    .select("id, member_id, recorded_at, recorded_for, weight, height, waist, bust, hips, note, photo_url, created_at, updated_at")
     .single<ProgressUpdateRecord>();
 
   if (error) throw error;
   return data;
+}
+
+export async function checkIfMemberIsInactive(memberId: string, date: string): Promise<boolean> {
+  const { data: gratitudeData, error: gratitudeError } = await supabase
+    .from("gratitude_entries")
+    .select("id")
+    .eq("member_id", memberId)
+    .eq("entry_date", date)
+    .maybeSingle();
+
+  if (gratitudeError) {
+    console.error("Failed to fetch gratitude entry:", gratitudeError);
+    return true; // Assume inactive if there's an error
+  }
+
+  const { data: homeworkData, error: homeworkError } = await supabase
+    .from("homework_submissions")
+    .select("id")
+    .eq("member_id", memberId)
+    .eq("submission_date", date)
+    .maybeSingle();
+
+  if (homeworkError) {
+    console.error("Failed to fetch homework submission:", homeworkError);
+    return true; // Assume inactive if there's an error
+  }
+
+  return !gratitudeData && !homeworkData;
 }

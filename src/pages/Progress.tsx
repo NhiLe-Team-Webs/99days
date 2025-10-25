@@ -1,10 +1,9 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/components/AuthenticatedLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress as ProgressBar } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { fetchProgressUpdates, upsertProgressUpdate } from "@/lib/member-data";
@@ -25,6 +24,9 @@ interface ProgressEntry {
   recordedFor: string;
   weight: number;
   height: number;
+  waist: number | null;
+  bust: number | null;
+  hips: number | null;
   photoUrl: string | null;
 }
 
@@ -49,6 +51,27 @@ function todayISODate() {
   return new Date().toISOString().split("T")[0]!;
 }
 
+function parseMeasurement(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  if (Number.isNaN(parsed) || parsed <= 0) return null;
+  return +parsed.toFixed(1);
+}
+
+function formatMeasurement(value: number | null, unit: string) {
+  if (value == null) return "--";
+  return `${value.toFixed(1)} ${unit}`;
+}
+
+function getBMIStatus(bmi: number) {
+  if (!bmi) return { label: "Chưa có dữ liệu", variant: "secondary" as const };
+  if (bmi < 18.5) return { label: "Thiếu cân", variant: "secondary" as const };
+  if (bmi < 23) return { label: "Cân đối", variant: "default" as const };
+  if (bmi < 25) return { label: "Tiền thừa cân", variant: "outline" as const };
+  return { label: "Thừa cân", variant: "destructive" as const };
+}
+
 export default function Progress() {
   const { toast } = useToast();
   const { member, loading: memberLoading, error: memberError } = useCurrentMember();
@@ -59,6 +82,9 @@ export default function Progress() {
 
   const [weight, setWeight] = useState<string>("");
   const [height, setHeight] = useState<string>("");
+  const [waist, setWaist] = useState<string>("");
+  const [bust, setBust] = useState<string>("");
+  const [hips, setHips] = useState<string>("");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoData, setPhotoData] = useState<string | null>(null);
 
@@ -79,6 +105,9 @@ export default function Progress() {
           recordedFor: item.recorded_for,
           weight: item.weight,
           height: item.height,
+          waist: item.waist,
+          bust: item.bust,
+          hips: item.hips,
           photoUrl: item.photo_url,
         }));
         mapped.sort((a, b) => {
@@ -90,6 +119,9 @@ export default function Progress() {
         if (latest) {
           setWeight(latest.weight.toString());
           setHeight(latest.height.toString());
+          setWaist(latest.waist != null ? latest.waist.toString() : "");
+          setBust(latest.bust != null ? latest.bust.toString() : "");
+          setHips(latest.hips != null ? latest.hips.toString() : "");
           setPhotoPreview(latest.photoUrl);
           setPhotoData(latest.photoUrl);
         }
@@ -116,6 +148,7 @@ export default function Progress() {
   const previousEntry = entries.length > 1 ? entries[1] : null;
 
   const bmi = latestEntry ? calculateBMI(latestEntry.weight, latestEntry.height) : 0;
+  const bmiStatus = getBMIStatus(bmi);
 
   const weightDelta = useMemo(() => {
     if (!latestEntry || !previousEntry) return null;
@@ -134,8 +167,17 @@ export default function Progress() {
         date: new Date(`${entry.recordedFor}T00:00:00`).toLocaleDateString("vi-VN"),
         weight: entry.weight,
         height: entry.height,
+        waist: entry.waist,
+        bust: entry.bust,
+        hips: entry.hips,
       }));
   }, [entries]);
+
+  const chartTooltipFormatter = useCallback((value: number | string, name: string) => {
+    if (typeof value !== "number") return [value, name];
+    const unit = name === "Cân nặng" ? "kg" : "cm";
+    return [`${value.toFixed(1)} ${unit}`, name];
+  }, []);
 
   const isFormDisabled = memberLoading || loadingEntries || !member;
 
@@ -172,10 +214,10 @@ export default function Progress() {
     event.preventDefault();
     if (!member) return;
 
-    const numericWeight = Number(weight);
-    const numericHeight = Number(height);
+    const numericWeight = parseMeasurement(weight);
+    const numericHeight = parseMeasurement(height);
 
-    if (!numericWeight || !numericHeight || Number.isNaN(numericWeight) || Number.isNaN(numericHeight)) {
+    if (numericWeight == null || numericHeight == null) {
       toast({
         variant: "destructive",
         title: "Thiếu chỉ số",
@@ -187,13 +229,29 @@ export default function Progress() {
     setIsSaving(true);
     const recordedFor = todayISODate();
 
+    const numericWaist = parseMeasurement(waist);
+    const numericBust = parseMeasurement(bust);
+    const numericHips = parseMeasurement(hips);
+
     try {
-      const saved = await upsertProgressUpdate(member.id, recordedFor, numericWeight, numericHeight, photoData);
+      const saved = await upsertProgressUpdate(
+        member.id,
+        recordedFor,
+        numericWeight,
+        numericHeight,
+        numericWaist,
+        numericBust,
+        numericHips,
+        photoData,
+      );
       const updated: ProgressEntry = {
         recordedAt: saved.recorded_at,
         recordedFor: saved.recorded_for,
         weight: saved.weight,
         height: saved.height,
+        waist: saved.waist,
+        bust: saved.bust,
+        hips: saved.hips,
         photoUrl: saved.photo_url,
       };
 
@@ -206,6 +264,11 @@ export default function Progress() {
         });
         return next;
       });
+      setWeight(numericWeight.toString());
+      setHeight(numericHeight.toString());
+      setBust(numericBust != null ? numericBust.toString() : "");
+      setWaist(numericWaist != null ? numericWaist.toString() : "");
+      setHips(numericHips != null ? numericHips.toString() : "");
 
       toast({
         title: "Đã lưu số liệu tiến độ",
@@ -284,10 +347,106 @@ export default function Progress() {
                 </div>
               </div>
             </div>
+
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <p className="text-xs uppercase text-muted-foreground">BMI</p>
+              <div className="mt-1 flex items-center justify-between gap-3">
+                <p className="text-2xl font-semibold text-foreground">{latestEntry ? bmi.toFixed(1) : "--"}</p>
+                <Badge variant={bmiStatus.variant}>{bmiStatus.label}</Badge>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Số đo ba vòng</p>
+                <span className="text-xs text-muted-foreground">Đơn vị: cm</span>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                  <p className="text-xs uppercase text-muted-foreground">Vòng ngực</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    {formatMeasurement(latestEntry?.bust ?? null, "cm")}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                  <p className="text-xs uppercase text-muted-foreground">Vòng eo</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    {formatMeasurement(latestEntry?.waist ?? null, "cm")}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                  <p className="text-xs uppercase text-muted-foreground">Vòng mông</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    {formatMeasurement(latestEntry?.hips ?? null, "cm")}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Biểu đồ tiến độ</CardTitle>
+              <CardDescription>Quan sát sự thay đổi của cân nặng và số đo mỗi lần bạn cập nhật.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {chartData.length ? (
+                <div className="h-72 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ left: 0, right: 16, top: 8, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="4 4" strokeOpacity={0.2} />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip formatter={chartTooltipFormatter} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="weight"
+                        name="Cân nặng"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="bust"
+                        name="Vòng ngực"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="waist"
+                        name="Vòng eo"
+                        stroke="#f97316"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="hips"
+                        name="Vòng mông"
+                        stroke="#a855f7"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Chưa có dữ liệu để hiển thị. Hãy lưu ít nhất một lần cập nhật để xem biểu đồ tiến độ.
+                </p>
+              )}
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle>Ghi nhận chỉ số</CardTitle>
@@ -335,6 +494,59 @@ export default function Progress() {
                       disabled={isFormDisabled}
                       required
                     />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-foreground">Số đo ba vòng (cm)</p>
+                    <span className="text-xs text-muted-foreground">Không bắt buộc</span>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground" htmlFor="bust">
+                        Vòng ngực
+                      </label>
+                      <Input
+                        id="bust"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        placeholder="Ví dụ: 85"
+                        value={bust}
+                        onChange={(event) => setBust(event.target.value)}
+                        disabled={isFormDisabled}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground" htmlFor="waist">
+                        Vòng eo
+                      </label>
+                      <Input
+                        id="waist"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        placeholder="Ví dụ: 60"
+                        value={waist}
+                        onChange={(event) => setWaist(event.target.value)}
+                        disabled={isFormDisabled}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground" htmlFor="hips">
+                        Vòng mông
+                      </label>
+                      <Input
+                        id="hips"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        placeholder="Ví dụ: 90"
+                        value={hips}
+                        onChange={(event) => setHips(event.target.value)}
+                        disabled={isFormDisabled}
+                      />
+                    </div>
                   </div>
                 </div>
 
