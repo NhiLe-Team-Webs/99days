@@ -1,0 +1,1320 @@
+[
+  {
+    "date": "2025-11-19",
+    "weekRange": "19/11-25/11",
+    "items": []
+  },
+  {
+    "date": "2025-11-20",
+    "weekRange": "19/11-25/11",
+    "items": []
+  },
+  {
+    "date": "2025-11-21",
+    "weekRange": "19/11-25/11",
+    "items": []
+  },
+  {
+    "date": "2025-11-22",
+    "weekRange": "19/11-25/11",
+    "items": []
+  },
+  {
+    "date": "2025-11-23",
+    "weekRange": "19/11-25/11",
+    "items": []
+  },
+  {
+    "date": "2025-11-24",
+    "weekRange": "19/11-25/11",
+    "items": []
+  },
+  {
+    "date": "2025-11-25",
+    "weekRange": "19/11-25/11",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-11-26",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Glute Bridge",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Static Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Squat to Chair",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Incline Push-up",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-11-27",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Wall Sit",
+        "details": "30s x 3 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Plank",
+        "details": "30s x 3 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Bird Dog",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Reverse Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-11-28",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Single Leg Hip Bridge",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Superman",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Side Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Squat",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-11-29",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Prone Y Raise",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Deadbug",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Hip Hinge Reach",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Static Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-11-30",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Side Plank",
+        "details": "30s x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Forward Lunge",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Prone Lying Scap Retraction",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Wall Slide",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-01",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "test",
+        "name": "Wall Sit Test (Squat Isometric Endurance)",
+        "details": "Form test",
+        "videoUrl": null,
+        "note": "Y nghia: danh gia suc ben co dui truoc (quadriceps), core ho tro, thang bang co ban."
+      },
+      {
+        "type": "test",
+        "name": "Plank Hold Test (Core Endurance)",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: do suc ben core, kha nang kiem soat cot song."
+      },
+      {
+        "type": "test",
+        "name": "Sit-to-Stand Test (Lower Body Strength & Coordination)",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh, toc do, kiem soat thang bang co ban."
+      },
+      {
+        "type": "test",
+        "name": "Push-up Modified Test (Upper Body Endurance)",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh - suc ben co nguc, vai, tay sau."
+      }
+    ]
+  },
+  {
+    "date": "2025-12-02",
+    "weekRange": "26/11-2/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-03",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Dumbbell Floor Press",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Romanian Deadlift",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Goblet Squat",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Static Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-04",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Wall Sit + Dumbbell Curl",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Reverse Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Single-Leg Deadlift",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Row",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Glute Bridge",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Lateral Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Shoulder Press",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Reverse Fly",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-05",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Bear Crawl Hold",
+        "details": "30s x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Front Squat",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Romanian Deadlift",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Renegade Row",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-06",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Shoulder Tap",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Thruster",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Forward Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Lateral Raise",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-07",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Deadbug",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Goblet Squat",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Reverse Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Front Raise",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-08",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Side Plank",
+        "details": "30s x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Romanian Deadlift",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Reverse Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Row",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-09",
+    "weekRange": "3/12-9/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-10",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Single-Leg Glute Bridge Hold",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Staggered Stance Squat",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Split Squat",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Renegade Row",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-11",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Lateral Lunge to Balance",
+        "details": "12 reps x 2 sets",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Reverse Lunge + Dumbbell Bicep Curl",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Single-Leg Romanian Deadlift",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Single-Arm Row",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-12",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Russian Twist",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Lunge to Balance",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Thruster",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Plank + Dumbbell Pull Through",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-13",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Bird Dog",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Good Morning to Calf Raise",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Shoulder Press",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Floor Chest Fly",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-14",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Glute Bridge March",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Thruster",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Staggered Stance Deadlift",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "exercise",
+        "name": "Prone Y-T Raise",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-15",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "test",
+        "name": "Wall Sit Test (Squat Isometric Endurance)",
+        "details": "Form test",
+        "videoUrl": null,
+        "note": "Y nghia: danh gia suc ben co dui truoc (quadriceps), core ho tro, thang bang co ban."
+      },
+      {
+        "type": "test",
+        "name": "Plank Hold Test (Core Endurance)",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: do suc ben core, kha nang kiem soat cot song."
+      },
+      {
+        "type": "test",
+        "name": "Sit-to-Stand Test (Lower Body Strength & Coordination)",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh, toc do, kiem soat thang bang co ban."
+      },
+      {
+        "type": "test",
+        "name": "Push-up Modified Test (Upper Body Endurance)",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh - suc ben co nguc, vai, tay sau."
+      }
+    ]
+  },
+  {
+    "date": "2025-12-16",
+    "weekRange": "10/12-16/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-17",
+    "weekRange": "17/12-23/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-18",
+    "weekRange": "17/12-23/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-19",
+    "weekRange": "17/12-23/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-20",
+    "weekRange": "17/12-23/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-21",
+    "weekRange": "17/12-23/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-22",
+    "weekRange": "17/12-23/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-23",
+    "weekRange": "17/12-23/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-24",
+    "weekRange": "24/12-30/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-25",
+    "weekRange": "24/12-30/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-26",
+    "weekRange": "24/12-30/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-27",
+    "weekRange": "24/12-30/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-28",
+    "weekRange": "24/12-30/12",
+    "items": []
+  },
+  {
+    "date": "2025-12-29",
+    "weekRange": "24/12-30/12",
+    "items": [
+      {
+        "type": "test",
+        "name": "Dumbbell Goblet Squat Endurance Test",
+        "details": "Form test",
+        "videoUrl": null,
+        "note": "Y nghia: danh gia suc ben co chan, kha nang kiem soat squat co tai."
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Step-Back Lunge Test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: do suc manh, thang bang, phoi hop lower body + core."
+      },
+      {
+        "type": "test",
+        "name": "Push up test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh - suc ben co nguc, vai, tay sau."
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Deadlift-to-Row",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh + phoi hop (hip hinge + pull)."
+      }
+    ]
+  },
+  {
+    "date": "2025-12-30",
+    "weekRange": "24/12-30/12",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2025-12-31",
+    "weekRange": "31/12-06/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-01",
+    "weekRange": "31/12-06/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-02",
+    "weekRange": "31/12-06/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-03",
+    "weekRange": "31/12-06/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-04",
+    "weekRange": "31/12-06/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-05",
+    "weekRange": "31/12-06/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-06",
+    "weekRange": "31/12-06/01",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-01-07",
+    "weekRange": "07/01-13/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-08",
+    "weekRange": "07/01-13/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-09",
+    "weekRange": "07/01-13/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-10",
+    "weekRange": "07/01-13/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-11",
+    "weekRange": "07/01-13/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-12",
+    "weekRange": "07/01-13/01",
+    "items": [
+      {
+        "type": "test",
+        "name": "Dumbbell Goblet Squat Endurance Test",
+        "details": "Form test",
+        "videoUrl": null,
+        "note": "Y nghia: danh gia suc ben co chan, kha nang kiem soat squat co tai."
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Step-Back Lunge Test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: do suc manh, thang bang, phoi hop lower body + core."
+      },
+      {
+        "type": "test",
+        "name": "Push up test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh - suc ben co nguc, vai, tay sau."
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Deadlift-to-Row",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh + phoi hop (hip hinge + pull)."
+      }
+    ]
+  },
+  {
+    "date": "2026-01-13",
+    "weekRange": "07/01-13/01",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-01-14",
+    "weekRange": "14/01-20/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-15",
+    "weekRange": "14/01-20/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-16",
+    "weekRange": "14/01-20/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-17",
+    "weekRange": "14/01-20/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-18",
+    "weekRange": "14/01-20/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-19",
+    "weekRange": "14/01-20/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-20",
+    "weekRange": "14/01-20/01",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Mobility",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-01-21",
+    "weekRange": "21/01-27/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-22",
+    "weekRange": "21/01-27/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-23",
+    "weekRange": "21/01-27/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-24",
+    "weekRange": "21/01-27/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-25",
+    "weekRange": "21/01-27/01",
+    "items": []
+  },
+  {
+    "date": "2026-01-26",
+    "weekRange": "21/01-27/01",
+    "items": [
+      {
+        "type": "test",
+        "name": "Dumbbell Thruster Test",
+        "details": "Form test",
+        "videoUrl": null,
+        "note": "Y nghia: do suc manh toan than + phoi hop + nhip tim."
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Step-Up Test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh chan + thang bang + cardio nhe."
+      },
+      {
+        "type": "exercise",
+        "name": "Dumbbell Deadlift-to-Row",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh + phoi hop (hip hinge + pull)."
+      },
+      {
+        "type": "test",
+        "name": "Modified Burpee Test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: do cong suat tim mach + phoi hop toan than."
+      }
+    ]
+  },
+  {
+    "date": "2026-01-27",
+    "weekRange": "21/01-27/01",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Mobility",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-01-28",
+    "weekRange": "28/01-03/02",
+    "items": []
+  },
+  {
+    "date": "2026-01-29",
+    "weekRange": "28/01-03/02",
+    "items": []
+  },
+  {
+    "date": "2026-01-30",
+    "weekRange": "28/01-03/02",
+    "items": []
+  },
+  {
+    "date": "2026-01-31",
+    "weekRange": "28/01-03/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-01",
+    "weekRange": "28/01-03/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-02",
+    "weekRange": "28/01-03/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-03",
+    "weekRange": "28/01-03/02",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-02-04",
+    "weekRange": "04/02-10/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-05",
+    "weekRange": "04/02-10/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-06",
+    "weekRange": "04/02-10/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-07",
+    "weekRange": "04/02-10/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-08",
+    "weekRange": "04/02-10/02",
+    "items": [
+      {
+        "type": "test",
+        "name": "Dumbbell Step-Up Test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh chan + thang bang + cardio nhe."
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Deadlift-to-Row",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: suc manh + phoi hop (hip hinge + pull)."
+      },
+      {
+        "type": "test",
+        "name": "Modified Burpee Test",
+        "details": null,
+        "videoUrl": null,
+        "note": "Y nghia: do cong suat tim mach + phoi hop toan than."
+      }
+    ]
+  },
+  {
+    "date": "2026-02-10",
+    "weekRange": "09/02/2026\nTest",
+    "items": [
+      {
+        "type": "test",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-02-11",
+    "weekRange": "11/02-17/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-12",
+    "weekRange": "11/02-17/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-13",
+    "weekRange": "11/02-17/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-14",
+    "weekRange": "11/02-17/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-15",
+    "weekRange": "11/02-17/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-16",
+    "weekRange": "11/02-17/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-17",
+    "weekRange": "11/02-17/02",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Stretching",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-02-18",
+    "weekRange": "18/02-24/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-19",
+    "weekRange": "18/02-24/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-20",
+    "weekRange": "18/02-24/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-21",
+    "weekRange": "18/02-24/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-22",
+    "weekRange": "18/02-24/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-23",
+    "weekRange": "18/02-24/02",
+    "items": []
+  },
+  {
+    "date": "2026-02-24",
+    "weekRange": "18/02-24/02",
+    "items": [
+      {
+        "type": "exercise",
+        "name": "Mobility",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  },
+  {
+    "date": "2026-02-25",
+    "weekRange": "25/02 - Final day",
+    "items": [
+      {
+        "type": "test",
+        "name": "Plank Hold",
+        "details": "1 phut",
+        "videoUrl": null,
+        "note": "20 phut\nNam: Dumbbell 10 kg\nNu: Dumbbell 5 kg"
+      },
+      {
+        "type": "test",
+        "name": "Push-up",
+        "details": "20 reps",
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Thruster",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Romanian Deadlift",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Forward Lunge",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Shoulder Press",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "test",
+        "name": "Dumbbell Bent-Over Row",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      },
+      {
+        "type": "test",
+        "name": "Burpee",
+        "details": null,
+        "videoUrl": null,
+        "note": null
+      }
+    ]
+  }
+]
