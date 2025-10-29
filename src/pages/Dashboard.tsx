@@ -1,3 +1,4 @@
+﻿
 // src/pages/Dashboard.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +17,7 @@ function formatISODate(date: Date) {
 
 export default function Dashboard() {
   const [countdown99, setCountdown99] = useState('--');
-  const [userName, setUserName] = useState(''); 
+  const [userName, setUserName] = useState('');
   const [quote, setQuote] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,13 @@ export default function Dashboard() {
     day: '2-digit',
     month: '2-digit',
   }).format(tomorrow);
+  const programStartLabel = programStartDate
+    ? new Intl.DateTimeFormat('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(programStartDate)
+    : '';
 
   // Badge configurations with new SVG icons
   const badgeConfigs = [
@@ -99,7 +107,7 @@ export default function Dashboard() {
       ),
       lockedIcon: (
         <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF">
-          <path d="m226-120-90-498q-35 13-65.5-8T40-685q0-29.7 20.8-50.85Q81.59-757 110.8-757q29.2 0 50.2 21.15 21 21.15 21 50.85 0 15.11-5.5 28.05Q171-644 161-634q26.21 17.33 53.01 28.67Q240.81-594 270.59-594 323-594 365-624t68-76l23-42q-21-8-34-26t-13-41q0-29.29 20.8-50.14 20.79-20.86 50-20.86 29.2 0 50.2 20.86 21 20.85 21 50.14 0 23-13 41t-34 26l23 42q26 46 68.5 76t94.99 30q29.83 0 56.67-11.5Q774-617 800-633q-11-10-16.5-23.46T778-685q0-29.7 20.8-50.85 20.79-21.15 50-21.15 29.2 0 50.2 21.15 21 21.15 21 50.85 0 37-29.5 58T827-617l-92 497H226Zm50-60h408l66-361q-15 3-30 5.5t-30 2.5q-66 0-120.5-35T480-660q-35 56-89 91.5T271-533q-16 0-31-2.5t-30-4.5l66 360Zm204 0Z"/>
+          <path d="m226-120-90-498q-35 13-65.5-8T40-685q0-29.7 20.8-50.85Q81.59-757 110.8-757q29.2 0 50.2 21.15 21 21.15 21 50.85 0 15.11-5.5 28.05Q171-644 161-634q26.21 17.33 53.01 28.67Q240.81-594 270.59-594 323-594 365-624t68-76l23-42q-21-8-34-26t-13-41q0-29.29 20.8-50.14 20.79-20.86 50-20.86 29.2 0 50.2 20.86 21 21.15 21 50.14 0 37-29.5 58T827-617l-92 497H226Zm50-60h408l66-361q-15 3-30 5.5t-30 2.5q-66 0-120.5-35T480-660q-35 56-89 91.5T271-533q-16 0-31-2.5t-30-4.5l66 360Zm204 0Z"/>
         </svg>
       )
     }
@@ -222,11 +230,12 @@ export default function Dashboard() {
 
     // 4. Cập nhật đếm ngược buổi tập 4:45 sáng
     const updateSessionCountdown = () => {
-      const targetTime = new Date(now);
+      const current = new Date();
+      const targetTime = new Date(current);
       targetTime.setHours(4, 45, 0, 0);
-      if (now > targetTime) targetTime.setDate(targetTime.getDate() + 1);
+      if (current > targetTime) targetTime.setDate(targetTime.getDate() + 1);
 
-      const diff = targetTime.getTime() - now.getTime();
+      const diff = targetTime.getTime() - current.getTime();
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -286,7 +295,7 @@ export default function Dashboard() {
     };
 
     fetchMotivationQuote();
-  }, [userName, userEmail]); // Chỉ chạy khi có đủ thông tin user
+  }, [userName, userEmail]);
 
   // Loading state
   if (loading || programStartDate === null) {
@@ -344,7 +353,7 @@ export default function Dashboard() {
                   disabled
                   className="rounded-lg bg-gray-300 px-8 py-4 text-center text-xl font-semibold text-white"
                 >
-                  {zoomLoading ? "Dang tai link Zoom..." : "Link se som duoc cap nhat"}
+                  {zoomLoading ? 'Đang tải link Zoom...' : 'Link sẽ sớm được cập nhật'}
                 </button>
               )}
               </div>
@@ -361,109 +370,108 @@ export default function Dashboard() {
                   return (
                     <div
                       key={badge.day}
-                      className={`badge ${isUnlocked ? 'unlocked' : 'locked'}`}
+                      className={`rounded-xl border p-4 shadow-sm transition ${
+                        isUnlocked ? 'border-primary/60 bg-primary/10' : 'border-gray-200 bg-gray-50'
+                      }`}
                     >
-                      <div
-                        className={`mx-auto flex h-24 w-24 items-center justify-center rounded-full ${
-                          isUnlocked
-                            ? 'bg-gradient-to-br from-white-100 to-orange-100 shadow-lg border-2 border-yellow-300'
-                            : 'bg-gray-200'
-                        }`}
-                      >
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center">
                         {isUnlocked ? badge.unlockedIcon : badge.lockedIcon}
                       </div>
-                      <p className={`mt-2 font-semibold ${isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>
-                        {badge.name}
-                      </p>
-                      <p className="text-sm text-gray-500">{badge.day} ngày</p>
-                      {isUnlocked && (
-                        <div className="mt-1">
-                          <span className="inline-block rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">
-                            ✓ Đã đạt được
-                          </span>
-                        </div>
-                      )}
+                      <p className="mt-3 text-sm font-semibold text-gray-800">{badge.name}</p>
+                      <p className="text-xs text-gray-500">Ngày {badge.day}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
+
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-8">
-            {/* Đếm ngược 99 ngày */}
-            <div className="rounded-xl bg-white p-6 text-center shadow-lg">
-              <h3 className="mb-2 text-xl font-bold">Hành Trình 99 Ngày</h3>
-              <p className="mb-4 text-gray-600">Số ngày còn lại để chinh phục:</p>
-              <div className="text-6xl font-extrabold text-primary">{countdown99}</div>
-              <div className="mt-6">
-                <div className="mb-1 flex justify-between">
-                  <span className="text-base font-medium text-primary">Tiến trình</span>
-                  <span className="text-sm font-medium text-primary">{progressText}</span>
-                </div>
-                <div className="h-4 w-full rounded-full bg-gray-200">
-                  <div
-                    className="h-4 rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${progressWidth}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Thông báo */}
             <div className="rounded-xl bg-white p-6 shadow-lg">
-              <h3 className="mb-4 text-xl font-bold">Thông báo</h3>
-              <div className="space-y-4">
-                <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4">
-                  <p className="font-semibold text-primary">Lịch tập ngày mai ({tomorrowLabel})</p>
-                  {tomorrowWorkout ? (
-                    <div className="mt-2 space-y-2">
-                      <p className="text-sm text-gray-700">
-                        Chủ đề: <span className="font-medium text-gray-900">{tomorrowWorkout.title}</span>
-                      </p>
-                      {tomorrowWorkout.description ? (
-                        <p className="text-sm text-gray-600">{tomorrowWorkout.description}</p>
-                      ) : null}
-                      <a
-                        href={tomorrowWorkout.videoUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                      >
-                        Xem video hướng dẫn
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-4 w-4"
-                        >
-                          <path d="M7 17L17 7" />
-                          <path d="M7 7h10v10" />
-                        </svg>
-                      </a>
-                      <p className="text-xs text-gray-500">Đừng quên chuẩn bị dụng cụ từ tối nay nhé!</p>
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-gray-600">
-                      Lịch tập cho ngày mai sẽ được cập nhật sớm. Hãy kiểm tra lại vào cuối ngày hôm nay để chuẩn bị chu đáo.
-                    </p>
+              <h3 className="text-xl font-bold text-gray-800">Thông báo hôm nay</h3>
+              <p className="mt-1 text-sm text-gray-500 capitalize">{tomorrowLabel}</p>
+              {tomorrowWorkout ? (
+                <div className="mt-4 space-y-3 text-left">
+                  <p className="text-lg font-semibold text-gray-900">{tomorrowWorkout.title}</p>
+                  {tomorrowWorkout.description && (
+                    <p className="text-sm text-gray-600">{tomorrowWorkout.description}</p>
                   )}
+                  <a
+                    href={tomorrowWorkout.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  >
+                    Xem video hướng dẫn
+                  </a>
                 </div>
-              </div>
+              ) : (
+                <p className="mt-4 text-sm text-gray-600">
+                  Lịch tập cho ngày mai đang được cập nhật. Vui lòng quay lại sau nhé!
+                </p>
+              )}
             </div>
 
-            {/* Truy cập nhanh */}
             <div className="rounded-xl bg-white p-6 shadow-lg">
-              <h3 className="mb-4 text-xl font-bold">Truy cập nhanh</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="text-primary hover:underline">Thư viện bài tập</a></li>
-                <li><a href="#" className="text-primary hover:underline">Hướng dẫn dinh dưỡng</a></li>
-                <li><a href="#" className="text-primary hover:underline">Nhóm Telegram cộng đồng</a></li>
+              <h3 className="text-lg font-bold text-gray-800">Truy cập nhanh</h3>
+              <ul className="mt-4 space-y-3 text-sm text-primary">
+                <li>
+                  <a
+                    href="https://docs.google.com/spreadsheets/d/1_cyZuRCQ64ozupEqSPxwHlhoCCTZgyDnqyC_RAHZTQM/edit?usp=drivesdk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-semibold hover:underline"
+                  >
+                    📚 Thư viện bài tập
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://docs.google.com/document/d/1B8WZOvy6B0UbaE6q1yl7slxVehpNOcK8KAL90Fpgucw/edit?tab=t.0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-semibold hover:underline"
+                  >
+                    🥗 Hướng dẫn dinh dưỡng
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://t.me/+ejI5L4hEBD03OGM1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-semibold hover:underline"
+                  >
+                    🤝 Cộng đồng Telegram
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-xl bg-white p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-800">Tiến độ hành trình</h3>
+              <p className="mt-2 text-sm text-gray-500">{progressText}</p>
+              <div className="mt-4 h-2 w-full rounded-full bg-gray-200">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${progressWidth}%` }}
+                ></div>
+              </div>
+              <p className="mt-4 text-xs text-gray-500">
+                Còn lại {countdown99} ngày để hoàn thành mục tiêu 99 ngày.
+              </p>
+              {programStartLabel && (
+                <p className="mt-2 text-xs text-gray-400">Bắt đầu từ ngày {programStartLabel}</p>
+              )}
+            </div>
+
+            <div className="rounded-xl bg-white p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-800">Nhắc nhở hàng ngày</h3>
+              <ul className="mt-3 space-y-2 text-sm text-gray-600">
+                <li>• Ghi nhận 3 điều biết ơn.</li>
+                <li>• Thực hiện thói quen quan trọng trong ngày.</li>
+                <li>• Chia sẻ cảm nhận với đội nhóm.</li>
               </ul>
             </div>
           </div>
