@@ -1,12 +1,14 @@
-﻿
-// src/pages/Dashboard.tsx
+﻿// src/pages/Dashboard.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { fetchTodayZoomLink, getAdminProgramStartDate } from '@/lib/api';
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
-import { workoutHistory } from '@/mock/workouts';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { getWorkoutForDate } from '@/data/workouts';
 import { dailyQuotes } from '@/lib/quotes';
+import { ArrowUpRight } from 'lucide-react';
 
 type BadgeConfig = {
   day: number;
@@ -30,6 +32,13 @@ function formatISODate(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function formatPlanItemTitle(title: string) {
+  if (/^Buoi tap ngay/i.test(title)) {
+    return 'Video luyện tập';
+  }
+  return title;
 }
 
 export default function Dashboard() {
@@ -57,7 +66,7 @@ export default function Dashboard() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowISO = formatISODate(tomorrow);
-  const tomorrowWorkout = workoutHistory.find((entry) => entry.date === tomorrowISO);
+  const tomorrowPlan = getWorkoutForDate(tomorrowISO);
   const tomorrowLabel = new Intl.DateTimeFormat('vi-VN', {
     weekday: 'long',
     day: '2-digit',
@@ -250,7 +259,6 @@ export default function Dashboard() {
       <div className="mx-auto max-w-6xl space-y-10">
         {/* Động lực */}
         <div className="mb-2 rounded-xl bg-gradient-to-r from-primary to-orange-500 p-5 text-center text-white shadow-lg sm:p-6">
-          <h2 className="mb-2 text-base font-semibold sm:text-lg">🔥 Động lực cho hôm nay 🔥</h2>
           {loading ? (
             <div className="h-6 rounded bg-yellow-200 animate-pulse"></div>
           ) : (
@@ -330,20 +338,44 @@ export default function Dashboard() {
             <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="text-xl font-bold text-gray-800">Thông báo hôm nay</h3>
               <p className="mt-1 text-sm capitalize text-gray-500">{tomorrowLabel}</p>
-              {tomorrowWorkout ? (
+              {tomorrowPlan ? (
                 <div className="mt-4 space-y-3 text-left">
-                  <p className="text-lg font-semibold text-gray-900">{tomorrowWorkout.title}</p>
-                  {tomorrowWorkout.description && (
-                    <p className="text-sm text-gray-600">{tomorrowWorkout.description}</p>
-                  )}
-                  <a
-                    href={tomorrowWorkout.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={tomorrowPlan.type === 'test' ? 'destructive' : 'outline'}>
+                      {tomorrowPlan.type === 'test' ? 'Bài test' : 'Buổi tập'}
+                    </Badge>
+                    {tomorrowPlan.label ? (
+                      <span className="text-sm font-semibold text-gray-900">{tomorrowPlan.label}</span>
+                    ) : null}
+                  </div>
+
+                  <p className="text-sm text-gray-600">
+                    {tomorrowPlan.type === 'test'
+                      ? 'Ngày mai bạn có bài test thể lực, hãy chuẩn bị đầy đủ dụng cụ và ghi lại kết quả sau khi hoàn thành.'
+                      : 'Xem trước danh sách động tác để chủ động thời gian luyện tập và chuẩn bị dụng cụ cần thiết.'}
+                  </p>
+
+                  {tomorrowPlan.items.length ? (
+                    <ul className="ml-4 list-disc space-y-1 text-sm text-gray-600">
+                      {tomorrowPlan.items.slice(0, 3).map((item, index) => (
+                        <li key={`${tomorrowPlan.date}-${index}`}>{formatPlanItemTitle(item.title)}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  {tomorrowPlan.items.length > 3 ? (
+                    <p className="text-xs text-gray-500">
+                      Còn {tomorrowPlan.items.length - 3} nội dung khác, xem đầy đủ trong trang Bài tập.
+                    </p>
+                  ) : null}
+
+                  <Button
+                    onClick={() => navigate(`/workouts?date=${tomorrowPlan.date}`)}
+                    className="inline-flex items-center gap-2"
                   >
-                    Xem video hướng dẫn
-                  </a>
+                    Xem chi tiết
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Button>
                 </div>
               ) : (
                 <p className="mt-4 text-sm text-gray-600">

@@ -1,130 +1,320 @@
-import { useMemo, useState } from "react";
-import { format, isAfter, isSameDay } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
+import { vi } from "date-fns/locale";
+import { useSearchParams } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";
 import AuthenticatedLayout from "@/components/AuthenticatedLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { workoutHistory, WorkoutEntry } from "@/mock/workouts";
-import { ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  firstWorkoutDate,
+  getWorkoutForDate,
+  lastWorkoutDate,
+  workoutPlan,
+  workoutPlanByDate,
+  workoutDates,
+  type WorkoutDay,
+  type WorkoutItem,
+  type WorkoutResource,
+  type WorkoutResourceType,
+} from "@/data/workouts";
+import type { LucideIcon } from "lucide-react";
+import { ExternalLink, FileText, PlayCircle } from "lucide-react";
 
-function normalizeDateKey(date: Date) {
-  return format(date, "yyyy-MM-dd");
+const RESOURCE_TEXT: Record<WorkoutResourceType, { label: string; icon: LucideIcon }> = {
+  video: { label: "Xem video hướng dẫn", icon: PlayCircle },
+  link: { label: "Mở tài liệu", icon: ExternalLink },
+  form: { label: "Điền biểu mẫu kết quả", icon: FileText },
+};
+
+const RESOURCE_PRIORITY: Record<WorkoutResourceType, number> = {
+  video: 0,
+  link: 1,
+  form: 2,
+};
+
+const PRIMARY_COLOR = "#FF6F00";
+const PRIMARY_COLOR_LIGHT = "#FFE3C2";
+const PRIMARY_COLOR_DARK = "#CC5800";
+
+function normalizeTitle(item: WorkoutItem, day: WorkoutDay) {
+  const raw = item.title.trim();
+  if (/^Buoi tap ngay/i.test(raw)) {
+    const datePart = raw.replace(/^Buoi tap ngay\s*/i, "").trim();
+    return `Video luyện tập ngày ${datePart || format(parseISO(day.date), "dd/MM/yyyy")}`;
+  }
+  return raw;
 }
 
-function createWorkoutLookup(entries: WorkoutEntry[]) {
-  const map = new Map<string, WorkoutEntry>();
-  entries.forEach((entry) => {
-    map.set(entry.date, entry);
-  });
-  return map;
+function getDateFromKey(key: string | undefined) {
+  if (!key) return undefined;
+  const parsed = parseISO(key);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
 export default function Workouts() {
-  const sortedWorkouts = useMemo(() => {
-    return [...workoutHistory].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryDate = searchParams.get("date");
+
+  const today = useMemo(() => new Date(), []);
+  const todayKey = format(today, "yyyy-MM-dd");
+
+  const normalizedQuery = useMemo(() => {
+    if (!queryDate) return undefined;
+    const parsed = getDateFromKey(queryDate);
+    return parsed ? format(parsed, "yyyy-MM-dd") : undefined;
+  }, [queryDate]);
+
+  const initialDateKey = useMemo(() => {
+    return normalizedQuery ?? todayKey;
+  }, [normalizedQuery, todayKey]);
+
+  useEffect(() => {
+    if (!initialDateKey) return;
+    if (queryDate !== initialDateKey) {
+      setSearchParams({ date: initialDateKey }, { replace: true });
+    }
+  }, [initialDateKey, queryDate, setSearchParams]);
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => getDateFromKey(initialDateKey) ?? today);
+
+  useEffect(() => {
+    const next = getDateFromKey(initialDateKey) ?? today;
+    setSelectedDate(next);
+  }, [initialDateKey, today]);
+
+  const selectedDateKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined;
+  const selectedDay = selectedDateKey ? getWorkoutForDate(selectedDateKey) : undefined;
+
+  const formResources = useMemo<WorkoutResource[]>(() => {
+    if (!selectedDay) return [];
+    const seen = new Set<string>();
+    const aggregated: WorkoutResource[] = [];
+    selectedDay.items.forEach((item) => {
+      (item.resources ?? []).forEach((resource) => {
+        if (resource.type === "form" && !seen.has(resource.url)) {
+          seen.add(resource.url);
+          aggregated.push(resource);
+        }
+      });
+    });
+    return aggregated;
+  }, [selectedDay]);
+
+  const isFutureSelection = selectedDate ? selectedDate.getTime() > today.getTime() : false;
+
+  const calendarData = useMemo(() => {
+    const workoutDays: Date[] = [];
+    const testDays: Date[] = [];
+    workoutPlan.forEach((day) => {
+      const parsed = parseISO(day.date);
+      if (day.type === "test") {
+        testDays.push(parsed);
+      } else {
+        workoutDays.push(parsed);
+      }
+    });
+    return { workoutDays, testDays };
   }, []);
 
-  const workoutsByDate = useMemo(() => createWorkoutLookup(sortedWorkouts), [sortedWorkouts]);
-
-  const defaultSelectedDate = useMemo(() => {
-    if (!sortedWorkouts.length) return undefined;
-    return new Date(sortedWorkouts[sortedWorkouts.length - 1].date);
-  }, [sortedWorkouts]);
-
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(defaultSelectedDate);
-
-  const selectedWorkout = useMemo(() => {
-    if (!selectedDate) return undefined;
-    return workoutsByDate.get(normalizeDateKey(selectedDate));
-  }, [selectedDate, workoutsByDate]);
-
-  const today = new Date();
-  const workoutDates = useMemo(() => sortedWorkouts.map((entry) => new Date(entry.date)), [sortedWorkouts]);
+  const firstDate = firstWorkoutDate ? parseISO(firstWorkoutDate) : undefined;
+  const lastDate = lastWorkoutDate ? parseISO(lastWorkoutDate) : undefined;
 
   return (
     <AuthenticatedLayout
       title="Bài tập"
-      description="Xem lại lịch sử bài tập và truy cập nhanh video hướng dẫn"
-      className="bg-muted/40"
+      description="Theo dõi toàn bộ lịch trình trong 99 ngày và mở nhanh video hướng dẫn cho từng buổi tập hoặc bài kiểm tra."
+      className="bg-transparent"
     >
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:flex-row">
-        <Card className="flex-1">
+      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+        <Card className="h-fit">
           <CardHeader>
-            <CardTitle>Lịch bài tập</CardTitle>
-            <CardDescription>Chọn một ngày đã hoàn thành để xem chi tiết bài tập.</CardDescription>
+            <CardTitle>Lịch hành trình</CardTitle>
+            <CardDescription>Chọn một ngày trong kế hoạch 99 ngày để xem chi tiết nội dung luyện tập.</CardDescription>
           </CardHeader>
           <CardContent>
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={(date) => {
-                if (!date) {
-                  setSelectedDate(undefined);
-                  return;
-                }
-
-                if (isAfter(date, today)) {
-                  return;
-                }
-
+                if (!date) return;
+                const iso = format(date, "yyyy-MM-dd");
                 setSelectedDate(date);
+                setSearchParams({ date: iso }, { replace: true });
               }}
-              disabled={{ after: today }}
+              fromDate={firstDate}
+              toDate={lastDate}
               modifiers={{
-                hasWorkout: workoutDates,
+                hasWorkout: calendarData.workoutDays,
+                hasTest: calendarData.testDays,
               }}
-              modifiersClassNames={{
-                hasWorkout: "border border-primary bg-primary/10 text-primary hover:bg-primary/20",
+              modifiersStyles={{
+                hasWorkout: {
+                  backgroundColor: PRIMARY_COLOR_LIGHT,
+                  color: PRIMARY_COLOR_DARK,
+                },
+                hasTest: {
+                  backgroundColor: "#D32F2F",
+                  color: "#FFF4F4",
+                },
               }}
               className="rounded-md border"
             />
-            <p className="mt-4 text-sm text-muted-foreground">
-              Các ngày được đánh dấu hiển thị bài tập đã thực hiện trước đây. Ngày tương lai sẽ được mở khi có lịch.
-            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-3 w-3 rounded-full"
+                  style={{ backgroundColor: PRIMARY_COLOR }}
+                />
+                Buổi tập
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-red-700" />
+                Bài test
+              </div>
+              <div className="flex-1 text-right text-xs italic">
+                {workoutDates.length} ngày được thiết kế sẵn trong chương trình.
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="flex-1">
+        <Card>
           <CardHeader>
-            <CardTitle>Chi tiết bài tập</CardTitle>
+            <CardTitle>Chi tiết nội dung</CardTitle>
             <CardDescription>
-              {selectedDate ? `Ngày ${format(selectedDate, "dd/MM/yyyy")}` : "Chọn một ngày trong lịch để xem bài tập."}
+              {selectedDate
+                ? format(selectedDate, "EEEE, dd/MM/yyyy", { locale: vi })
+                : "Chọn một ngày trong lịch để xem nội dung luyện tập."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!selectedDate ? (
               <p className="text-sm text-muted-foreground">
-                Vui lòng chọn một ngày trên lịch để xem bài tập tương ứng.
+                Hãy chọn một ngày bất kỳ trong hành trình 99 ngày để xem video luyện tập hoặc bài test tương ứng.
               </p>
-            ) : selectedWorkout ? (
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">{selectedWorkout.title}</h3>
-                  {selectedWorkout.description ? (
-                    <p className="mt-1 text-sm text-muted-foreground">{selectedWorkout.description}</p>
-                  ) : null}
-                </div>
-                <a
-                  href={selectedWorkout.videoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-                >
-                  Xem video hướng dẫn
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </div>
-            ) : (
+            ) : !selectedDay ? (
               <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 p-4">
                 <p className="text-sm text-muted-foreground">
-                  Không có bài tập nào được ghi nhận cho ngày {format(selectedDate, "dd/MM/yyyy")}. Hãy quay lại sau khi lịch được cập nhật.
+                  Chưa có dữ liệu cho ngày {format(selectedDate, "dd/MM/yyyy")}. Khi kế hoạch cập nhật, nội dung sẽ xuất hiện ở
+                  đây.
                 </p>
               </div>
-            )}
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className="px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                    style={{
+                      borderColor: selectedDay.type === "test" ? "#B71C1C" : PRIMARY_COLOR,
+                      color: selectedDay.type === "test" ? "#B71C1C" : PRIMARY_COLOR,
+                    }}
+                  >
+                    {selectedDay.type === "test" ? "Bài test" : "Buổi tập"}
+                  </Badge>
+                  {selectedDay.label ? <span className="text-sm font-medium text-foreground">{selectedDay.label}</span> : null}
+                  {selectedDay.week ? (
+                    <span className="text-xs text-muted-foreground">Tuần: {selectedDay.week}</span>
+                  ) : null}
+                </div>
 
-            {selectedDate && workoutDates.some((date) => isSameDay(date, selectedDate)) ? null : (
-              <p className="text-xs text-muted-foreground">
-                Nếu bạn đã hoàn thành bài tập trong ngày này, hãy bổ sung thông tin để cập nhật lịch sử luyện tập.
-              </p>
+                {isFutureSelection ? (
+                  <p className="text-xs text-muted-foreground">
+                    Đây là nội dung chuẩn bị cho buổi tới. Hãy xem trước để sẵn sàng luyện tập hiệu quả.
+                  </p>
+                ) : null}
+
+                <div className="space-y-4">
+                  {selectedDay.items.map((item, index) => (
+                    <div
+                      key={`${selectedDay.date}-${index}`}
+                      className="rounded-lg border border-muted bg-white p-4 shadow-sm"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-base font-semibold text-foreground">{normalizeTitle(item, selectedDay)}</h3>
+                          {item.reps ? (
+                            <Badge variant="secondary" className="text-xs font-medium text-foreground">
+                              {item.reps}
+                            </Badge>
+                          ) : null}
+                        </div>
+
+                        {item.description ? (
+                          <p className="text-sm text-muted-foreground whitespace-pre-line">{item.description}</p>
+                        ) : null}
+
+                        {item.notes && item.notes.length ? (
+                          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                            {item.notes.map((note, noteIndex) => (
+                              <li key={`${selectedDay.date}-${index}-note-${noteIndex}`}>{note}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+
+                        {item.resources && item.resources.length ? (
+                          <div className="flex flex-col gap-2 pt-1">
+                            {item.resources
+                              .filter((resource) => resource.type !== "form")
+                              .sort((a, b) => RESOURCE_PRIORITY[a.type] - RESOURCE_PRIORITY[b.type])
+                              .map((resource, resourceIndex) => {
+                                const meta = RESOURCE_TEXT[resource.type];
+                                const Icon = meta.icon;
+                                const href = resource.url;
+                                const buttonStyle =
+                                  resource.type === "video"
+                                    ? { backgroundColor: PRIMARY_COLOR, color: "#FFFFFF" }
+                                    : { backgroundColor: PRIMARY_COLOR_DARK, color: "#FFFFFF" };
+
+                                return (
+                                  <Button
+                                    key={`${selectedDay.date}-${index}-resource-${resourceIndex}`}
+                                    size="sm"
+                                    className="inline-flex items-center gap-2 justify-start"
+                                    style={buttonStyle}
+                                    asChild
+                                  >
+                                    <a href={href} target="_blank" rel="noreferrer">
+                                      <Icon className="h-4 w-4" />
+                                      {meta.label}
+                                    </a>
+                                  </Button>
+                                );
+                              })}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {formResources.length ? (
+                  <div className="rounded-lg border border-dashed border-muted-foreground/40 bg-white p-4">
+                    <p className="text-sm font-semibold text-foreground">Điền biểu mẫu kết quả</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Hoàn thành tất cả các bài tập trước khi gửi biểu mẫu tổng kết.
+                    </p>
+                    <div className="mt-3 flex flex-col gap-2">
+                      {formResources.map((resource, index) => (
+                        <Button
+                          key={`${selectedDay.date}-form-${index}`}
+                          size="sm"
+                          className="inline-flex items-center gap-2 justify-start"
+                          style={{ backgroundColor: "#E65100", color: "#FFFFFF" }}
+                          asChild
+                        >
+                          <a href={resource.url} target="_blank" rel="noreferrer">
+                            <FileText className="h-4 w-4" />
+                            {formResources.length > 1 ? `${RESOURCE_TEXT.form.label} ${index + 1}` : RESOURCE_TEXT.form.label}
+                          </a>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </>
             )}
           </CardContent>
         </Card>
