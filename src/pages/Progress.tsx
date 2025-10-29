@@ -550,7 +550,7 @@ export default function Progress() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground" htmlFor="photo">
                     Ảnh minh chứng (tuỳ chọn)
                   </label>
@@ -573,7 +573,7 @@ export default function Progress() {
                   <p className="text-xs text-muted-foreground">
                     Ảnh được lưu trong cơ sở dữ liệu của bạn. Nếu không chọn ảnh mới, hệ thống sẽ giữ lại ảnh đã lưu trước đó.
                   </p>
-                </div>
+                </div> */}
 
                 <Button type="submit" disabled={isFormDisabled || isSaving}>
                   {isSaving ? "Đang lưu..." : "Lưu tiến độ"}

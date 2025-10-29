@@ -10,7 +10,7 @@ const Footer = () => {
         </p>
         <p className="mt-2 text-gray-400">
           Liên hệ hỗ trợ:{' '}
-          <a href="mailto:99days@nhi.sg" className="hover:underline text-red-400">
+          <a href="mailto:99days@nhi.sg" className="hover:underline text-primary">
             99days@nhi.sg
           </a>
         </p>

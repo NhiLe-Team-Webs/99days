@@ -4,13 +4,25 @@ export interface Applicant {
   id?: string;
   ho_ten: string;
   email: string;
-  so_dien_thoai: string;
+  so_dien_thoai?: string | null;
   telegram: string;
   nam_sinh: number | null;
+  gioi_tinh: string;
+  dia_chi: string;
+  da_tham_gia_truoc: string;
+  link_bai_chia_se: string | null;
+  muc_tieu: string;
+  ky_luat_rating: number | null;
   ly_do: string;
+  thoi_gian_thuc_day: string;
+  tan_suat_tap_the_duc: string;
+  muc_do_van_dong: number | null;
+  tinh_trang_suc_khoe: string;
   dong_y: boolean;
   status?: 'pending' | 'approved' | 'rejected';
   created_at?: string;
+  updated_at?: string;
+  approved_at?: string | null;
 }
 
 export interface AdminSetting {
@@ -19,8 +31,13 @@ export interface AdminSetting {
   updated_at: string;
 }
 
-export type ApplicantFormInput = Omit<Applicant, 'id' | 'status' | 'created_at' | 'nam_sinh'> & {
+export type ApplicantFormInput = Omit<
+  Applicant,
+  'id' | 'status' | 'created_at' | 'updated_at' | 'approved_at' | 'nam_sinh' | 'ky_luat_rating' | 'muc_do_van_dong'
+> & {
   nam_sinh: string | number;
+  ky_luat_rating: string | number;
+  muc_do_van_dong: string | number;
 };
 
 export const submitApplication = async (data: ApplicantFormInput) => {
@@ -37,26 +54,106 @@ export const submitApplication = async (data: ApplicantFormInput) => {
     Number.isInteger(namSinhValue) && namSinhValue >= 1900 && namSinhValue <= currentYear;
 
   if (!isValidNamSinh) {
-    throw new Error('Nam sinh khong hop le');
+    throw new Error('Năm sinh không hợp lệ');
   }
+
+  const rawKyLuat = data.ky_luat_rating;
+  const kyLuatValue =
+    typeof rawKyLuat === 'number'
+      ? rawKyLuat
+      : rawKyLuat.toString().trim() === ''
+      ? Number.NaN
+      : Number(rawKyLuat);
+
+  if (!Number.isInteger(kyLuatValue) || kyLuatValue < 1 || kyLuatValue > 5) {
+    throw new Error('Đánh giá kỷ luật không hợp lệ');
+  }
+
+  const rawActivity = data.muc_do_van_dong;
+  const mucDoVanDongValue =
+    typeof rawActivity === 'number'
+      ? rawActivity
+      : rawActivity.toString().trim() === ''
+      ? Number.NaN
+      : Number(rawActivity);
+
+  if (!Number.isInteger(mucDoVanDongValue) || mucDoVanDongValue < 1 || mucDoVanDongValue > 5) {
+    throw new Error('Mức độ vận động không hợp lệ');
+  }
+
+  const insertPayload = {
+    ho_ten: data.ho_ten,
+    email: data.email,
+    so_dien_thoai: data.so_dien_thoai ?? null,
+    telegram: data.telegram,
+    nam_sinh: namSinhValue,
+    gioi_tinh: data.gioi_tinh,
+    dia_chi: data.dia_chi,
+    da_tham_gia_truoc: data.da_tham_gia_truoc,
+    link_bai_chia_se: data.link_bai_chia_se ?? null,
+    muc_tieu: data.muc_tieu,
+    ky_luat_rating: kyLuatValue,
+    ly_do: data.ly_do,
+    thoi_gian_thuc_day: data.thoi_gian_thuc_day,
+    tan_suat_tap_the_duc: data.tan_suat_tap_the_duc,
+    muc_do_van_dong: mucDoVanDongValue,
+    tinh_trang_suc_khoe: data.tinh_trang_suc_khoe,
+    dong_y: data.dong_y,
+    status: 'pending' as const
+  };
 
   const { data: result, error } = await supabase
     .from('applicants')
-    .insert([
-      {
-        ...data,
-        nam_sinh: namSinhValue,
-        status: 'pending'
-      }
-    ])
+    .insert([insertPayload])
     .select();
 
   if (error) throw error;
+
+  const webhookUrl = import.meta.env.VITE_FORM_RESPONSES_WEBHOOK_URL;
+  if (webhookUrl) {
+    const [created] = result ?? [];
+    const sheetPayload = {
+      timestamp: new Date().toISOString(),
+      emailAddress: data.email,
+      fullName: data.ho_ten,
+      birthYear: namSinhValue,
+      gender: data.gioi_tinh,
+      address: data.dia_chi,
+      email: data.email,
+      telegram: data.telegram,
+      participatedBefore: data.da_tham_gia_truoc,
+      shareLink: data.link_bai_chia_se ?? '',
+      goal: data.muc_tieu,
+      discipline: kyLuatValue,
+      motivation: data.ly_do,
+      wakeUpTime: data.thoi_gian_thuc_day,
+      workoutFrequency: data.tan_suat_tap_the_duc,
+      activityLevel: mucDoVanDongValue,
+      healthNotes: data.tinh_trang_suc_khoe,
+      applicantId: created?.id ?? null
+    };
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sheetPayload)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(
+        errorText.trim().length > 0
+          ? `Không thể đồng bộ đăng ký lên Google Sheet: ${errorText}`
+          : 'Không thể đồng bộ đăng ký lên Google Sheet'
+      );
+    }
+  }
+
   return result;
 };
 
 export const checkEmailExists = async (email: string) => {
-  console.log('Dang kiem tra email:', email);
+  console.log('Đang kiểm tra email:', email);
 
   const { data: applicants, error: error1 } = await supabase
     .from('applicants')
@@ -65,11 +162,11 @@ export const checkEmailExists = async (email: string) => {
     .limit(1);
 
   if (error1) {
-    console.error('Loi query applicants:', error1);
+    console.error('Lỗi query applicants:', error1);
     throw error1;
   }
 
-  console.log('Ket qua applicants:', applicants);
+  console.log('Kết quả applicants:', applicants);
 
   if (applicants.length > 0) return true;
 
@@ -80,11 +177,11 @@ export const checkEmailExists = async (email: string) => {
     .limit(1);
 
   if (error2) {
-    console.error('Loi query members:', error2);
+    console.error('Lỗi query members:', error2);
     throw error2;
   }
 
-  console.log('Ket qua members:', members);
+  console.log('Kết quả members:', members);
 
   return members.length > 0;
 };
