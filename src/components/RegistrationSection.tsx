@@ -127,6 +127,7 @@ const RegistrationSection = () => {
   const totalSteps = STEP_CONFIG.length;
   const activeStep = STEP_CONFIG[currentStep];
   const progressPercent = ((currentStep + 1) / totalSteps) * 100;
+  const CONTACT_STEP_INDEX = STEP_CONFIG.findIndex((step) => step.id === 'contact');
   const EXPERIENCE_STEP_INDEX = STEP_CONFIG.findIndex((step) => step.id === 'experience');
   const isExperienceStep = currentStep === EXPERIENCE_STEP_INDEX;
   const linkValue =
@@ -279,22 +280,46 @@ const RegistrationSection = () => {
     });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    markFieldsTouched(activeStep.fields);
+
     if (isExperienceStep && isLinkMissing) {
       setErrors((prev) => ({
         ...prev,
         link_bai_chia_se: 'Vui lòng nhập link bài chia sẻ'
       }));
-      markFieldsTouched(activeStep.fields);
       return;
     }
 
     if (!validateFields(activeStep.fields)) {
-      markFieldsTouched(activeStep.fields);
       return;
     }
 
-    markFieldsTouched(activeStep.fields);
+    if (currentStep === CONTACT_STEP_INDEX) {
+      if (isCheckingEmail) return;
+      setErrorMessage(null);
+      setIsCheckingEmail(true);
+      try {
+        const exists = await checkEmailExists(formData.email);
+        if (exists) {
+          setErrors((prev) => ({
+            ...prev,
+            email: 'Email này đã tồn tại trong hệ thống'
+          }));
+          markFieldTouched('email');
+          setStatus('error');
+          setIsCheckingEmail(false);
+          return;
+        }
+      } catch (error) {
+        setErrorMessage('Không thể kiểm tra email. Vui lòng thử lại sau.');
+        setStatus('error');
+        setIsCheckingEmail(false);
+        return;
+      }
+      setIsCheckingEmail(false);
+    }
+
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
     requestAnimationFrame(() => {
       cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -897,7 +922,7 @@ const RegistrationSection = () => {
                   {currentStep < totalSteps - 1 && (
                     <button
                       type="button"
-                      onClick={handleNext}
+                      onClick={() => void handleNext()}
                       className="btn-primary w-full md:w-auto"
                       disabled={nextStepDisabled}
                     >
