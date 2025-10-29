@@ -1,39 +1,50 @@
-import workoutGroup from '@/assets/workout-group.jpg';
+const highlights = [
+  {
+    title: '⏰ Thời gian',
+    description: 'Mỗi ngày từ 4h45 sáng (giờ Việt Nam) cùng NhiLe Team.',
+  },
+  {
+    title: '📍 Địa điểm',
+    description: 'Bất cứ đâu! Bạn có thể tham gia tại nhà, công viên hay phòng gym.',
+  },
+  {
+    title: '🧭 Hình thức',
+    description: 'Online qua Zoom. Chỉ cần thức dậy đúng giờ và theo các bài tập đã chuẩn bị sẵn.',
+  },
+  {
+    title: '🙌 Ai có thể tham gia?',
+    description: 'Mọi người từ 14 đến 55 tuổi, dù mới bắt đầu hay đã có kinh nghiệm đều được chào đón.',
+  },
+];
 
 const HowItWorksSection = () => {
   return (
-    <section id="cach-thuc" className="py-20 bg-white">
+    <section id="cach-thuc" className="bg-white py-20">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
             Chương trình hoạt động như thế nào?
           </h2>
         </div>
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+
+        <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1fr,1.1fr]">
           <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-1">⏰ Thời gian:</h3>
-              <p className="text-gray-600">Mỗi ngày từ 4h45 sáng (giờ Việt Nam).</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-1">📍 Địa điểm:</h3>
-              <p className="text-gray-600">Bất cứ đâu! Bạn có thể tham gia tại nhà, công viên, hay phòng gym.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-1">💻 Hình thức:</h3>
-              <p className="text-gray-600">Online qua Zoom. Chỉ cần thức dậy và thực hiện các bài tập được thiết kế sẵn.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-1">👥 Ai có thể tham gia?</h3>
-              <p className="text-gray-600">Bất kỳ ai từ 14 đến 55 tuổi, dù là người mới bắt đầu hay đã có kinh nghiệm.</p>
-            </div>
+            {highlights.map(({ title, description }) => (
+              <div key={title}>
+                <h3 className="mb-1 text-xl font-semibold">{title}</h3>
+                <p className="text-gray-600">{description}</p>
+              </div>
+            ))}
           </div>
-          <div>
-            <img 
-              src={workoutGroup} 
-              alt="Tham gia chương trình" 
-              className="rounded-lg shadow-xl w-full h-auto"
+
+          <div className="relative overflow-hidden rounded-3xl shadow-xl">
+            <img
+              src="/group.jpg"
+              alt="Cộng đồng luyện tập cùng nhau"
+              className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
+              loading="lazy"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
           </div>
         </div>
       </div>
