@@ -45,9 +45,16 @@ const Header = () => {
         <a
           href="#gioi-thieu"
           onClick={() => setActiveSection('gioi-thieu')}
-          className="text-2xl font-bold text-gray-900"
+          className="flex items-center gap-3 text-2xl font-bold text-gray-900"
         >
-          <span className="text-primary">99 Days</span> with NhiLe
+          <img
+            src="/favicon.ico"
+            alt="99 Days logo"
+            className="h-10 w-10"
+          />
+          <span>
+            <span className="text-primary">99 Days</span> with NhiLe
+          </span>
         </a>
 
         {/* Desktop Menu */}

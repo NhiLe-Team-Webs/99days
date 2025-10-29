@@ -480,7 +480,7 @@ const RegistrationSection = () => {
           <div className="grid gap-6 md:grid-cols-2">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="ho_ten">
-                Ho va Ten *
+                Họ và tên *
               </label>
               <input
                 id="ho_ten"

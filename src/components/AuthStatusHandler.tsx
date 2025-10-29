@@ -85,7 +85,7 @@ const AuthStatusHandler = () => {
             </p>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Đăng Ký Ngay
             </button>
@@ -158,7 +158,7 @@ const AuthStatusHandler = () => {
       case 'checking':
         return (
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-gray-600">Đang kiểm tra trạng thái tài khoản...</p>
           </div>
         );
@@ -171,7 +171,7 @@ const AuthStatusHandler = () => {
   if (status === 'approved') return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
       <div className="max-w-md w-full px-6 py-8 bg-white rounded-xl shadow-lg">
         {renderContent()}
         

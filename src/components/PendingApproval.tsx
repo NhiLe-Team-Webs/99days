@@ -13,7 +13,7 @@ const PendingApproval = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
       <div className="max-w-md w-full px-6 py-8 bg-white rounded-xl shadow-lg text-center">
         <div className="mb-6">
           <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -35,9 +35,9 @@ const PendingApproval = () => {
         </div>
 
         <div className="space-y-3">
-          <Button 
+          <Button
             onClick={handleLogout}
-            className="w-full bg-red-600 hover:bg-red-700"
+            className="w-full"
           >
             Đăng xuất
           </Button>
