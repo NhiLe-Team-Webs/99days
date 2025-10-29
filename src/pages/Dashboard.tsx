@@ -249,8 +249,8 @@ export default function Dashboard() {
     <AuthenticatedLayout title="Trang điều khiển" description={`Chào mừng ${userName || 'bạn'} trở lại hành trình 99 ngày`}>
       <div className="mx-auto max-w-6xl space-y-10">
         {/* Động lực */}
-        <div className="mb-2 rounded-xl bg-gradient-to-r from-primary to-orange-500 p-6 text-center text-white shadow-lg">
-          <h2 className="mb-2 text-lg font-semibold">🔥 Động lực cho hôm nay 🔥</h2>
+        <div className="mb-2 rounded-xl bg-gradient-to-r from-primary to-orange-500 p-5 text-center text-white shadow-lg sm:p-6">
+          <h2 className="mb-2 text-base font-semibold sm:text-lg">🔥 Động lực cho hôm nay 🔥</h2>
           {loading ? (
             <div className="h-6 rounded bg-yellow-200 animate-pulse"></div>
           ) : (
@@ -262,8 +262,8 @@ export default function Dashboard() {
           {/* Cột chính */}
           <div className="space-y-8 lg:col-span-2">
             {/* Buổi tập */}
-            <div className="rounded-xl border-t-4 border-primary bg-white p-8 shadow-lg">
-              <h2 className="mb-2 text-2xl font-bold text-gray-800">Buổi tập sáng nay đã sẵn sàng!</h2>
+            <div className="rounded-xl border-t-4 border-primary bg-white p-6 shadow-lg sm:p-8">
+              <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">Buổi tập sáng nay đã sẵn sàng!</h2>
               <p className="mb-6 text-gray-600">Hãy tham gia đúng giờ vào lúc 4:45 sáng để không bỏ lỡ khoảnh khắc nào nhé.</p>
 
               <div className="mb-6 rounded-lg bg-gray-50 p-6 text-center">
@@ -296,7 +296,7 @@ export default function Dashboard() {
             </div>
 
             {/* Huy hiệu */}
-            <div className="rounded-xl bg-white p-6 shadow-lg">
+            <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="mb-4 text-xl font-bold">Huy hiệu đã đạt được</h3>
               <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
                 {BADGE_CONFIGS.map((badge) => {
@@ -327,7 +327,7 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-8">
-            <div className="rounded-xl bg-white p-6 shadow-lg">
+            <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="text-xl font-bold text-gray-800">Thông báo hôm nay</h3>
               <p className="mt-1 text-sm capitalize text-gray-500">{tomorrowLabel}</p>
               {tomorrowWorkout ? (
@@ -352,9 +352,9 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="rounded-xl bg-white p-6 shadow-lg">
+            <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="text-lg font-bold text-gray-800">Truy cập nhanh</h3>
-              <ul className="mt-4 space-y-3 text-sm">
+              <ul className="mt-4 space-y-3 text-left text-sm">
                 <li>
                   <a
                     href="https://docs.google.com/spreadsheets/d/1_cyZuRCQ64ozupEqSPxwHlhoCCTZgyDnqyC_RAHZTQM/edit?usp=drivesdk"
@@ -388,7 +388,7 @@ export default function Dashboard() {
               </ul>
             </div>
 
-            <div className="rounded-xl bg-white p-6 shadow-lg">
+            <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="text-lg font-bold text-gray-800">Tiến độ hành trình</h3>
               <p className="mt-2 text-sm text-gray-500">{progressText}</p>
               <div className="mt-4 h-2 w-full rounded-full bg-gray-200">
@@ -405,7 +405,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="rounded-xl bg-white p-6 shadow-lg">
+            <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="text-lg font-bold text-gray-800">Nhắc nhở hàng ngày</h3>
               <ul className="mt-3 space-y-2 text-sm text-gray-600">
                 <li>• Ghi nhận 3 điều biết ơn.</li>
