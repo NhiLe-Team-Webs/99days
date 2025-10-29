@@ -117,7 +117,7 @@ function AuthenticatedLayoutContent({
   return (
     <>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="flex items-center justify-between border-b border-border px-3 py-3">
+        <SidebarHeader className="flex items-center justify-between border-b border-border px-3 py-3 sm:px-4">
           {!isCollapsed ? (
             <span className="text-lg font-semibold text-sidebar-foreground">99 Days Challenge</span>
           ) : (
@@ -144,9 +144,9 @@ function AuthenticatedLayoutContent({
                   return (
                     <SidebarMenuItem key={item.to}>
                       <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                        <Link to={item.to} className="flex items-center gap-3">
-                          <Icon className="h-4 w-4" />
-                          <span>{item.label}</span>
+                        <Link to={item.to} className="flex items-center gap-3 text-sm font-medium">
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -169,14 +169,14 @@ function AuthenticatedLayoutContent({
         <SidebarRail />
       </Sidebar>
       <SidebarInset className="flex min-h-screen flex-col">
-        <header className="flex items-center gap-4 border-b border-border bg-background/80 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <SidebarTrigger className="flex lg:hidden" />
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-            {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+        <header className="flex flex-wrap items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:flex-nowrap sm:gap-4 sm:px-6 sm:py-4">
+          <SidebarTrigger className="flex h-10 w-10 items-center justify-center rounded-md border border-border lg:hidden" />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-lg font-semibold text-foreground sm:text-xl">{title}</h1>
+            {description ? <p className="mt-0.5 text-sm text-muted-foreground">{description}</p> : null}
           </div>
         </header>
-        <main className={cn("flex-1 px-6 py-6", className)}>{children}</main>
+        <main className={cn("flex-1 px-4 py-4 sm:px-6 sm:py-6", className)}>{children}</main>
       </SidebarInset>
     </>
   );
