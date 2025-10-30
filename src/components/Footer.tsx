@@ -11,7 +11,7 @@ const Footer = () => {
         <p className="mt-2 text-gray-400">
           Liên hệ hỗ trợ:{' '}
           <a href="mailto:99days@nhi.sg" className="hover:underline text-primary">
-            99days@nhi.sg
+            https://t.me/Team_Exercise
           </a>
         </p>
         <div className="mt-6 text-sm text-gray-500">
