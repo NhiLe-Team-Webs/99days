@@ -59,6 +59,7 @@ export default function Dashboard() {
   });
   const [zoomLink, setZoomLink] = useState<string | null>(null);
   const [zoomLoading, setZoomLoading] = useState(true);
+  const [isZoomWindowOpen, setIsZoomWindowOpen] = useState(false);
   const [programStartDate, setProgramStartDate] = useState<Date | null>(null);
 
   const navigate = useNavigate();
@@ -229,6 +230,22 @@ export default function Dashboard() {
     getZoomLink();
   }, []);
 
+  useEffect(() => {
+    const updateZoomWindow = () => {
+      const now = new Date();
+      const start = new Date(now);
+      start.setHours(4, 0, 0, 0);
+      const end = new Date(now);
+      end.setHours(9, 0, 0, 0);
+      const inWindow = now >= start && now < end;
+      setIsZoomWindowOpen(inWindow);
+    };
+
+    updateZoomWindow();
+    const timer = setInterval(updateZoomWindow, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   // useEffect riêng để chọn quote khi đã có thông tin user
   useEffect(() => {
     if (dailyQuotes.length === 0) {
@@ -280,7 +297,15 @@ export default function Dashboard() {
               </div>
 
               <div className="flex justify-center">
-                {zoomLink ? (
+                {zoomLoading ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full rounded-lg bg-gray-300 px-8 py-4 text-center text-xl font-semibold text-white"
+                  >
+                    Đang tải link Zoom...
+                  </button>
+                ) : isZoomWindowOpen && zoomLink ? (
                   <a
                     href={zoomLink}
                     target="_blank"
@@ -293,14 +318,12 @@ export default function Dashboard() {
                   <button
                     type="button"
                     disabled
-                    className="rounded-lg bg-gray-300 px-8 py-4 text-center text-xl font-semibold text-white"
+                    className="w-full rounded-lg bg-gray-300 px-8 py-4 text-center text-xl font-semibold text-white"
                   >
-                    {zoomLoading ? 'Đang tải link Zoom...' : 'Link sẽ sớm được cập nhật'}
+                    {isZoomWindowOpen ? 'Link Zoom sớm được cập nhật' : 'Link Zoom chỉ hiện từ 4h đến 9h sáng'}
                   </button>
                 )}
               </div>
-
-              <p className="mt-3 text-center text-xs text-gray-500">Lưu ý: Link sẽ được cập nhật mỗi ngày.</p>
             </div>
 
             {/* Huy hiệu */}
@@ -387,16 +410,6 @@ export default function Dashboard() {
             <div className="rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h3 className="text-lg font-bold text-gray-800">Truy cập nhanh</h3>
               <ul className="mt-4 space-y-3 text-left text-sm">
-                <li>
-                  <a
-                    href="https://docs.google.com/spreadsheets/d/1_cyZuRCQ64ozupEqSPxwHlhoCCTZgyDnqyC_RAHZTQM/edit?usp=drivesdk"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 font-semibold text-primary hover:underline"
-                  >
-                    📚 Thư viện bài tập
-                  </a>
-                </li>
                 <li>
                   <a
                     href="https://docs.google.com/document/d/1B8WZOvy6B0UbaE6q1yl7slxVehpNOcK8KAL90Fpgucw/edit?tab=t.0"
