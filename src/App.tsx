@@ -9,6 +9,7 @@ import PendingApproval from "./components/PendingApproval";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthStatusHandler from "./components/AuthStatusHandler";
 import Gratitude from "./pages/Gratitude";
+import DailyVoice from "./pages/DailyVoice";
 import Homework from "./pages/Homework";
 import Progress from "./pages/Progress";
 import Workouts from "./pages/Workouts";
@@ -35,6 +36,14 @@ const App = () => (
         element={
           <ProtectedRoute>
             <Gratitude />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/daily-voice"
+        element={
+          <ProtectedRoute>
+            <DailyVoice />
           </ProtectedRoute>
         }
       />

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { LayoutDashboard, HeartHandshake, BookOpenCheck, Activity, Dumbbell } from "lucide-react";
+import { LayoutDashboard, HeartHandshake, BookOpenCheck, Activity, Dumbbell, MessageSquareQuote } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
@@ -33,6 +33,11 @@ const navigationItems = [
     label: "Biết ơn",
     to: "/gratitude",
     icon: HeartHandshake,
+  },
+  {
+    label: "What do you feel like saying?",
+    to: "/daily-voice",
+    icon: MessageSquareQuote,
   },
   {
     label: "Trả bài",
