@@ -9,6 +9,15 @@ export interface GratitudeEntryRecord {
   updated_at: string;
 }
 
+export interface DailyVoiceEntryRecord {
+  id: string;
+  member_id: string;
+  entry_date: string;
+  message: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface HomeworkSubmissionRecord {
   id: string;
   member_id: string;
@@ -60,6 +69,35 @@ export async function upsertGratitudeEntry(memberId: string, entryDate: string, 
     )
     .select("id, member_id, entry_date, gratitude, created_at, updated_at")
     .single<GratitudeEntryRecord>();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchDailyVoiceEntries(memberId: string): Promise<DailyVoiceEntryRecord[]> {
+  const { data, error } = await supabase
+    .from("daily_voice_entries")
+    .select("id, member_id, entry_date, message, created_at, updated_at")
+    .eq("member_id", memberId)
+    .order("entry_date", { ascending: false });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function upsertDailyVoiceEntry(memberId: string, entryDate: string, message: string) {
+  const { data, error } = await supabase
+    .from("daily_voice_entries")
+    .upsert(
+      {
+        member_id: memberId,
+        entry_date: entryDate,
+        message,
+      },
+      { onConflict: "member_id,entry_date" },
+    )
+    .select("id, member_id, entry_date, message, created_at, updated_at")
+    .single<DailyVoiceEntryRecord>();
 
   if (error) throw error;
   return data;
