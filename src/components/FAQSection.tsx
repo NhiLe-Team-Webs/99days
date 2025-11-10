@@ -227,7 +227,6 @@ const faqSections = [
         paragraphs: [
           "Hoàn toàn được!",
           "Chỉ cần tham gia đúng khung giờ 4h45 sáng (giờ Việt Nam).",
-          "Nếu lệch múi giờ, bạn có thể xem lại hướng dẫn bài tập để tự tập bù.",
         ],
       },
       {
