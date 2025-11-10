@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { LayoutDashboard, HeartHandshake, BookOpenCheck, Activity, Dumbbell, MessageSquareQuote } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCurrentMember } from "@/hooks/use-current-member";
+import type { MemberProfile } from "@/hooks/use-current-member";
 
 const navigationItems = [
   {
@@ -103,6 +105,7 @@ function AuthenticatedLayoutContent({
   const location = useLocation();
   const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
+  const { member, loading: memberLoading } = useCurrentMember();
 
   const handleLogout = useCallback(async () => {
     try {
@@ -174,12 +177,15 @@ function AuthenticatedLayoutContent({
         <SidebarRail />
       </Sidebar>
       <SidebarInset className="flex min-h-screen flex-col">
-        <header className="flex flex-wrap items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:flex-nowrap sm:gap-4 sm:px-6 sm:py-4">
-          <SidebarTrigger className="flex h-10 w-10 items-center justify-center rounded-md border border-border lg:hidden" />
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-semibold text-foreground sm:text-xl">{title}</h1>
-            {description ? <p className="mt-0.5 text-sm text-muted-foreground">{description}</p> : null}
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:flex-nowrap sm:gap-4 sm:px-6 sm:py-4">
+          <div className="flex flex-1 items-center gap-3">
+            <SidebarTrigger className="flex h-10 w-10 items-center justify-center rounded-md border border-border lg:hidden" />
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-lg font-semibold text-foreground sm:text-xl">{title}</h1>
+              {description ? <p className="mt-0.5 text-sm text-muted-foreground">{description}</p> : null}
+            </div>
           </div>
+          <MemberIdentityBadge member={member} loading={memberLoading} />
         </header>
         <main className={cn("flex-1 px-4 py-4 sm:px-6 sm:py-6", className)}>{children}</main>
       </SidebarInset>
@@ -188,3 +194,22 @@ function AuthenticatedLayoutContent({
 }
 
 export default AuthenticatedLayout;
+
+type MemberIdentityBadgeProps = {
+  member: MemberProfile | null;
+  loading: boolean;
+};
+
+function MemberIdentityBadge({ member, loading }: MemberIdentityBadgeProps) {
+  const nameDisplay = loading ? "Đang tải..." : member?.ho_ten ?? member?.email ?? "Chưa cập nhật";
+  const codeDisplay = loading ? "…" : member?.so_bao_danh ?? "Chưa có SBD";
+
+  return (
+    <div className="flex w-full flex-col rounded-lg border border-border bg-card/70 px-4 py-2 text-xs text-muted-foreground shadow-sm sm:w-auto sm:text-right">
+      <span className="text-sm font-semibold text-foreground">{nameDisplay}</span>
+      <span>
+        Số báo danh: <span className="font-medium text-foreground">{codeDisplay}</span>
+      </span>
+    </div>
+  );
+}

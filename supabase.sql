@@ -52,6 +52,7 @@ create table if not exists public.members (
   ho_ten text,
   so_dien_thoai text,
   telegram text,
+  so_bao_danh text unique,
   nam_sinh integer,
   status text not null default 'active' check (status in ('active', 'paused', 'dropped')),
   drop_reason text,
@@ -67,6 +68,13 @@ create trigger members_set_updated_at
 before update on public.members
 for each row
 execute function public.set_updated_at();
+
+alter table if exists public.members
+  add column if not exists so_bao_danh text;
+
+create unique index if not exists members_so_bao_danh_key
+  on public.members (so_bao_danh)
+  where so_bao_danh is not null;
 
 -- Activate Row Level Security so we can tailor access
 alter table public.applicants enable row level security;
