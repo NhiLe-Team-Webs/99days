@@ -851,6 +851,26 @@ const RegistrationSection = () => {
     }
   };
 
+  // Temporarily disable the registration form for the off-season and show a notice instead.
+  return (
+    <section id="dang-ky" className="bg-primary py-20 text-white">
+      <div className="container mx-auto px-6">
+        <div className="mx-auto max-w-3xl rounded-2xl bg-white p-10 text-center text-gray-900 shadow-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-primary">
+            99 Days With Nhi Le
+          </p>
+          <h2 className="mt-4 text-3xl font-bold text-primary md:text-4xl">Đăng ký đã đóng</h2>
+          <p className="mt-4 text-lg text-gray-600">
+            Đã hết thời gian đăng ký, vui lòng quay lại vào mùa sau.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+
+  /*
+  Original registration form preserved for the next season.
+
   return (
     <section id="dang-ky" className="bg-primary py-20 text-white">
       <div className="container mx-auto px-6">
@@ -950,6 +970,7 @@ const RegistrationSection = () => {
       </div>
     </section>
   );
+  */
 };
 
 export default RegistrationSection;
