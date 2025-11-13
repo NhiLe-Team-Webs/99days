@@ -4,6 +4,7 @@ export interface Applicant {
   id?: string;
   ho_ten: string;
   email: string;
+  so_bao_danh?: string | null;
   so_dien_thoai?: string | null;
   telegram: string;
   nam_sinh: number | null;

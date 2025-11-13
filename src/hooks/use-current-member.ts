@@ -6,6 +6,7 @@ export interface MemberProfile {
   email: string;
   ho_ten: string | null;
   so_bao_danh: string | null;
+  status: "active" | "paused" | "dropped";
 }
 
 interface UseCurrentMemberState {
@@ -37,7 +38,7 @@ export function useCurrentMember(): UseCurrentMemberState {
 
       const { data, error: memberError } = await supabase
         .from("members")
-        .select("id, email, ho_ten, so_bao_danh")
+        .select("id, email, ho_ten, so_bao_danh, status")
         .eq("email", email)
         .maybeSingle<MemberProfile>();
 
