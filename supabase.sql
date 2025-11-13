@@ -54,7 +54,7 @@ create table if not exists public.members (
   telegram text,
   so_bao_danh text unique,
   nam_sinh integer,
-  status text not null default 'active' check (status in ('active', 'paused', 'dropped')),
+  status text not null default 'active' check (status in ('active', 'paused', 'dropped', 'reborn_pending', 'reborn_active')),
   drop_reason text,
   start_date date not null default current_date,
   applicant_id uuid references public.applicants (id),
