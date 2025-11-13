@@ -2,20 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import DroppedMemberNotice from "@/components/DroppedMemberNotice";
+import { acceptRebornInvitation, declineRebornInvitation } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 
 type MemberAccessInfo = {
   id: string;
   email: string;
-  status: "active" | "paused" | "dropped";
+  status: "active" | "paused" | "dropped" | "reborn_pending" | "reborn_active";
   ho_ten: string | null;
   so_bao_danh: string | null;
+  drop_reason: string | null;
 };
-
-const DEFAULT_REBORN_URL =
-  "mailto:hello@99days.com?subject=ReBorn%20-%20T%C3%B4i%20mu%E1%BB%91n%20ti%E1%BA%BFp%20tục";
-const configuredRebornUrl = (import.meta.env.VITE_REBORN_SIGNUP_URL ?? "").trim();
-const rebornIntentUrl = configuredRebornUrl || DEFAULT_REBORN_URL;
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -35,6 +32,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     isAuthenticated: false,
     member: null,
   });
+  const [actionLoading, setActionLoading] = useState<null | "accept" | "decline">(null);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -56,7 +54,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
       const { data: member, error: memberError } = await supabase
         .from("members")
-        .select("id, email, status, ho_ten, so_bao_danh")
+        .select("id, email, status, ho_ten, so_bao_danh, drop_reason")
         .eq("email", session.user.email)
         .maybeSingle<MemberAccessInfo>();
 
@@ -104,6 +102,42 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     }
   }, [navigate]);
 
+  const handleAcceptReborn = useCallback(async () => {
+    if (!auth.member) return;
+    setActionLoading("accept");
+    try {
+      await acceptRebornInvitation(auth.member.id, auth.member.so_bao_danh ?? null);
+      console.info("Chào mừng bạn quay trở lại với thử thách.");
+      window.alert("Chào mừng bạn quay trở lại với thử thách!");
+      await checkAuth();
+    } catch (error) {
+      console.error("Không thể ghi nhận tham gia ReBorn:", error);
+      window.alert("Không thể ghi nhận tham gia ReBorn. Vui lòng thử lại sau.");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [auth.member, checkAuth]);
+
+  const handleDeclineReborn = useCallback(async () => {
+    if (!auth.member) return;
+    const confirmed = window.confirm(
+      "Bạn có chắc chắn muốn dừng lại? Sau khi xác nhận, bạn sẽ phải đợi mùa sau để quay lại."
+    );
+    if (!confirmed) return;
+
+    setActionLoading("decline");
+    try {
+      await declineRebornInvitation(auth.member.id);
+      window.alert("Bạn đã chọn dừng lại. Hẹn gặp lại bạn ở mùa tiếp theo.");
+      await handleStopReborn();
+    } catch (error) {
+      console.error("Không thể ghi nhận trạng thái ReBorn:", error);
+      window.alert("Không thể cập nhật lựa chọn của bạn. Vui lòng thử lại.");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [auth.member, handleStopReborn]);
+
   if (auth.loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
@@ -119,13 +153,27 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (auth.member?.status === "reborn_pending") {
+    return (
+      <DroppedMemberNotice
+        memberName={auth.member.ho_ten ?? auth.member.email}
+        memberCode={auth.member.so_bao_danh ?? undefined}
+        dropReason={auth.member.drop_reason ?? undefined}
+        isProcessing={actionLoading !== null}
+        onAccept={handleAcceptReborn}
+        onDecline={handleDeclineReborn}
+      />
+    );
+  }
+
   if (auth.member?.status === "dropped") {
     return (
       <DroppedMemberNotice
         memberName={auth.member.ho_ten ?? auth.member.email}
         memberCode={auth.member.so_bao_danh ?? undefined}
-        rebornUrl={rebornIntentUrl}
-        onStop={handleStopReborn}
+        dropReason={auth.member.drop_reason ?? undefined}
+        mode="final"
+        onExit={handleStopReborn}
       />
     );
   }

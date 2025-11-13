@@ -226,3 +226,35 @@ export const getAdminProgramStartDate = async (): Promise<string | null> => {
 
   return data?.value ?? null;
 };
+
+const formatRebornCode = (code: string | null) => {
+  if (!code) return null;
+  return code.startsWith("R") ? code : `R${code}`;
+};
+
+export const acceptRebornInvitation = async (memberId: string, currentSoBaoDanh: string | null) => {
+  const rebornCode = formatRebornCode(currentSoBaoDanh);
+
+  const { error } = await supabase
+    .from("members")
+    .update({
+      status: "reborn_active",
+      so_bao_danh: rebornCode,
+      drop_reason: null,
+    })
+    .eq("id", memberId);
+
+  if (error) throw error;
+  return rebornCode;
+};
+
+export const declineRebornInvitation = async (memberId: string) => {
+  const { error } = await supabase
+    .from("members")
+    .update({
+      status: "dropped",
+    })
+    .eq("id", memberId);
+
+  if (error) throw error;
+};
