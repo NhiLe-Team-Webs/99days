@@ -45,6 +45,15 @@ const navigationItems = [
     label: "Trả bài",
     to: "/homework",
     icon: BookOpenCheck,
+    // TODO: Phát triển tính năng cho mục "Trả bài":
+    // 1. Tạo trang Homework.tsx để hiển thị danh sách bài tập
+    // 2. Tạo form để người dùng nộp bài tập (upload file hoặc nhập text)
+    // 3. Tạo bảng theo dõi trạng thái nộp bài (đã nộp/chưa nộp/đã chấm)
+    // 4. Tạo hệ thống thông báo khi có bài tập mới hoặc khi bài được chấm
+    // 5. Tạo phần xem lại bài đã nộp và nhận xét từ giáo viên
+    // 6. Tạo lịch sử nộp bài của người dùng
+    // 7. Tích hợp với hệ thống điểm số và tiến độ học tập
+    // 8. Thêm tính năng nhắc nhở deadline nộp bài
   },
   {
     label: "Bài tập",
