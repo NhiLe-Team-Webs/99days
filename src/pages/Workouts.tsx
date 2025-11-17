@@ -62,8 +62,9 @@ export default function Workouts() {
 
   const isDateUnlocked = useCallback(
     (dateKey: string | undefined) => {
+      // Make all workout days available (not locked by date)
       if (!dateKey) return false;
-      return dateKey <= todayKey;
+      return true; // All dates are now unlocked
     },
     [todayKey]
   );
@@ -123,7 +124,7 @@ export default function Workouts() {
   const calendarData = useMemo(() => {
     const workoutDays: Date[] = [];
     const testDays: Date[] = [];
-    const lockedDays: Date[] = [];
+    const lockedDays: Date[] = []; // Keep for compatibility but will be empty
     workoutPlan.forEach((day) => {
       const parsed = parseISO(day.date);
       if (day.type === "test") {
@@ -131,9 +132,7 @@ export default function Workouts() {
       } else {
         workoutDays.push(parsed);
       }
-      if (!isDateUnlocked(day.date)) {
-        lockedDays.push(parsed);
-      }
+      // No days are locked anymore, so lockedDays will remain empty
     });
     return { workoutDays, testDays, lockedDays };
   }, [isDateUnlocked]);
@@ -168,7 +167,7 @@ export default function Workouts() {
               modifiers={{
                 hasWorkout: calendarData.workoutDays,
                 hasTest: calendarData.testDays,
-                locked: calendarData.lockedDays,
+                // No locked modifier needed since all days are available
               }}
               modifiersStyles={{
                 hasWorkout: {
@@ -179,9 +178,7 @@ export default function Workouts() {
                   backgroundColor: "#D32F2F",
                   color: "#FFF4F4",
                 },
-                locked: {
-                  opacity: 0.5,
-                },
+                // Remove locked styling since all days are now available
               }}
               className="rounded-md border"
             />
@@ -244,107 +241,97 @@ export default function Workouts() {
                   ) : null}
                 </div>
 
-                {!selectedDayUnlocked ? (
-                  <div className="rounded-lg border border-dashed border-muted-foreground/40 bg-white p-4">
-                    <p className="text-sm font-semibold text-foreground">
-                      Nội dung của bài tập sẽ được mở vào 7h sáng ngày {format(parseISO(selectedDay.date), "dd/MM/yyyy")}
-                    </p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Vui lòng quay lại sau khi link được cập nhật. Bạn vẫn có thể xem lại các buổi tập truớc đó trong lịch.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      {selectedDay.items.map((item, index) => (
-                        <div
-                          key={`${selectedDay.date}-${index}`}
-                          className="rounded-lg border border-muted bg-white p-4 shadow-sm"
-                        >
-                          <div className="flex flex-col gap-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-base font-semibold text-foreground">{normalizeTitle(item, selectedDay)}</h3>
-                              {item.reps ? (
-                                <Badge variant="secondary" className="text-xs font-medium text-foreground">
-                                  {item.reps}
-                                </Badge>
-                              ) : null}
-                            </div>
-
-                            {item.description ? (
-                              <p className="text-sm text-muted-foreground whitespace-pre-line">{item.description}</p>
-                            ) : null}
-
-                            {item.notes && item.notes.length ? (
-                              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                                {item.notes.map((note, noteIndex) => (
-                                  <li key={`${selectedDay.date}-${index}-note-${noteIndex}`}>{note}</li>
-                                ))}
-                              </ul>
-                            ) : null}
-
-                            {item.resources && item.resources.length ? (
-                              <div className="flex flex-col gap-2 pt-1">
-                                {item.resources
-                                  .filter((resource) => resource.type !== "form")
-                                  .sort((a, b) => RESOURCE_PRIORITY[a.type] - RESOURCE_PRIORITY[b.type])
-                                  .map((resource, resourceIndex) => {
-                                    const meta = RESOURCE_TEXT[resource.type];
-                                    const Icon = meta.icon;
-                                    const href = resource.url;
-                                    const buttonStyle =
-                                      resource.type === "video"
-                                        ? { backgroundColor: PRIMARY_COLOR, color: "#FFFFFF" }
-                                        : { backgroundColor: PRIMARY_COLOR_DARK, color: "#FFFFFF" };
-
-                                    return (
-                                      <Button
-                                        key={`${selectedDay.date}-${index}-resource-${resourceIndex}`}
-                                        size="sm"
-                                        className="inline-flex items-center gap-2 justify-start"
-                                        style={buttonStyle}
-                                        asChild
-                                      >
-                                        <a href={href} target="_blank" rel="noreferrer">
-                                          <Icon className="h-4 w-4" />
-                                          {meta.label}
-                                        </a>
-                                      </Button>
-                                    );
-                                  })}
-                              </div>
+                {/* All days are now unlocked, so we don't need locked check */}
+                <>
+                  <div className="space-y-4">
+                    {selectedDay.items.map((item, index) => (
+                      <div
+                        key={`${selectedDay.date}-${index}`}
+                        className="rounded-lg border border-muted bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-semibold text-foreground">{normalizeTitle(item, selectedDay)}</h3>
+                            {item.reps ? (
+                              <Badge variant="secondary" className="text-xs font-medium text-foreground">
+                                {item.reps}
+                              </Badge>
                             ) : null}
                           </div>
-                        </div>
-                      ))}
-                    </div>
 
-                    {formResources.length ? (
-                      <div className="rounded-lg border border-dashed border-muted-foreground/40 bg-white p-4">
-                        <p className="text-sm font-semibold text-foreground">Dien bieu mau ket qua</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Hoan thanh tat ca cac bai tap truoc khi gui bieu mau tong ket.
-                        </p>
-                        <div className="mt-3 flex flex-col gap-2">
-                          {formResources.map((resource, index) => (
-                            <Button
-                              key={`${selectedDay.date}-form-${index}`}
-                              size="sm"
-                              className="inline-flex items-center gap-2 justify-start"
-                              style={{ backgroundColor: "#E65100", color: "#FFFFFF" }}
-                              asChild
-                            >
-                              <a href={resource.url} target="_blank" rel="noreferrer">
-                                <FileText className="h-4 w-4" />
-                                {formResources.length > 1 ? `${RESOURCE_TEXT.form.label} ${index + 1}` : RESOURCE_TEXT.form.label}
-                              </a>
-                            </Button>
-                          ))}
+                          {item.description ? (
+                            <p className="text-sm text-muted-foreground whitespace-pre-line">{item.description}</p>
+                          ) : null}
+
+                          {item.notes && item.notes.length ? (
+                            <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                              {item.notes.map((note, noteIndex) => (
+                                <li key={`${selectedDay.date}-${index}-note-${noteIndex}`}>{note}</li>
+                              ))}
+                            </ul>
+                          ) : null}
+
+                          {item.resources && item.resources.length ? (
+                            <div className="flex flex-col gap-2 pt-1">
+                              {item.resources
+                                .filter((resource) => resource.type !== "form")
+                                .sort((a, b) => RESOURCE_PRIORITY[a.type] - RESOURCE_PRIORITY[b.type])
+                                .map((resource, resourceIndex) => {
+                                  const meta = RESOURCE_TEXT[resource.type];
+                                  const Icon = meta.icon;
+                                  const href = resource.url;
+                                  const buttonStyle =
+                                    resource.type === "video"
+                                      ? { backgroundColor: PRIMARY_COLOR, color: "#FFFFFF" }
+                                      : { backgroundColor: PRIMARY_COLOR_DARK, color: "#FFFFFF" };
+
+                                  return (
+                                    <Button
+                                      key={`${selectedDay.date}-${index}-resource-${resourceIndex}`}
+                                      size="sm"
+                                      className="inline-flex items-center gap-2 justify-start"
+                                      style={buttonStyle}
+                                      asChild
+                                    >
+                                      <a href={href} target="_blank" rel="noreferrer">
+                                        <Icon className="h-4 w-4" />
+                                        {meta.label}
+                                      </a>
+                                    </Button>
+                                  );
+                                })}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
-                    ) : null}
-                  </>
-                )}
+                    ))}
+                  </div>
+
+                  {formResources.length ? (
+                    <div className="rounded-lg border border-dashed border-muted-foreground/40 bg-white p-4">
+                      <p className="text-sm font-semibold text-foreground">Dien bieu mau ket qua</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Hoan thanh tat ca cac bai tap truoc khi gui bieu mau tong ket.
+                      </p>
+                      <div className="mt-3 flex flex-col gap-2">
+                        {formResources.map((resource, index) => (
+                          <Button
+                            key={`${selectedDay.date}-form-${index}`}
+                            size="sm"
+                            className="inline-flex items-center gap-2 justify-start"
+                            style={{ backgroundColor: "#E65100", color: "#FFFFFF" }}
+                            asChild
+                          >
+                            <a href={resource.url} target="_blank" rel="noreferrer">
+                              <FileText className="h-4 w-4" />
+                              {formResources.length > 1 ? `${RESOURCE_TEXT.form.label} ${index + 1}` : RESOURCE_TEXT.form.label}
+                            </a>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               </>
             )}
           </CardContent>

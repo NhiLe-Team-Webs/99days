@@ -187,25 +187,38 @@ export const checkEmailExists = async (email: string) => {
   return members.length > 0;
 };
 
+// Hardcoded Zoom links for rotation
+const ZOOM_LINKS = [
+  'https://zoom.us/j/91099405116?pwd=amLoPr1KDy7peEq4zOwPib1hVCGZ2i.1',
+  'https://zoom.us/j/98009145941?pwd=9V0bg9PGrvyManbMyBNl904AOd7waC.1',
+  'https://zoom.us/j/93932757317?pwd=PYQDif2aXZYO5W6nzGypyYlGQ0pJiY.1',
+  'https://zoom.us/j/96202879776?pwd=2nT6J6kflA0GKOovqOoYdqoLnIfb0D.1',
+  'https://zoom.us/j/95006619662?pwd=NkRXfIsVOrT8eWenvNtlQYTVp2o60i.1'
+];
+
+// Function to get the appropriate Zoom link based on date rotation
+const getRotatingZoomLink = (date: Date): string => {
+  // Start date for rotation (17-11-2025)
+  const startDate = new Date('2025-11-17T00:00:00');
+  
+  // Calculate days difference
+  const timeDiff = date.getTime() - startDate.getTime();
+  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  
+  // Calculate index (modulo 5 for 5 links)
+  const linkIndex = ((daysDiff % 5) + 5) % 5; // Ensure positive result
+  
+  return ZOOM_LINKS[linkIndex];
+};
+
 export const fetchTodayZoomLink = async (): Promise<string | null> => {
-  const today = new Date().toISOString().split('T')[0];
-
-  const { data, error } = await supabase
-    .from('daily_zoom_links')
-    .select('zoom_link:zoom_links(url)')
-    .eq('scheduled_for', today)
-    .maybeSingle<{ zoom_link: { url: string } | null }>();
-
-  if (error) {
-    if (error.code === 'PGRST205') {
-      console.warn("Bang 'daily_zoom_links' chua duoc tao. Vui long chay supabase.sql.");
-      return null;
-    }
-
-    throw error;
-  }
-
-  return data?.zoom_link?.url ?? null;
+  // Use the rotating system instead of database lookup
+  const today = new Date();
+  const zoomLink = getRotatingZoomLink(today);
+  
+  console.log(`Today's Zoom link (index: ${ZOOM_LINKS.indexOf(zoomLink)}):`, zoomLink);
+  
+  return zoomLink;
 };
 
 export const getAdminProgramStartDate = async (): Promise<string | null> => {
