@@ -198,8 +198,8 @@ const ZOOM_LINKS = [
 
 // Function to get the appropriate Zoom link based on date rotation
 const getRotatingZoomLink = (date: Date): string => {
-  // Start date for rotation (17-11-2025)
-  const startDate = new Date('2025-11-17T00:00:00');
+  // Start date for rotation (19-11-2025)
+  const startDate = new Date('2025-11-19T00:00:00');
   
   // Calculate days difference
   const timeDiff = date.getTime() - startDate.getTime();
