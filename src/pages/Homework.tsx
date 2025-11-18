@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { fetchHomeworkSubmissions, upsertHomeworkSubmission } from "@/lib/member-data";
+import { formatISODateInVietnam, formatDisplayDateInVietnam, isTodayInVietnam } from "@/lib/date-utils";
 
 interface HomeworkEntry {
   date: string;
@@ -15,19 +16,6 @@ interface HomeworkEntry {
   updatedAt: string;
 }
 
-function formatISODate(date?: Date) {
-  if (!date) return new Date().toISOString().split("T")[0]!;
-  const zonedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return zonedDate.toISOString().split("T")[0]!;
-}
-
-function formatDisplayDate(date: string) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
 
 export default function Homework() {
   const { toast } = useToast();
@@ -39,10 +27,10 @@ export default function Homework() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [submission, setSubmission] = useState("");
 
-  const today = formatISODate();
+  const today = formatISODateInVietnam();
 
   const selectedEntry = useMemo(() => {
-    const key = formatISODate(selectedDate);
+    const key = formatISODateInVietnam(selectedDate);
     return entries.find((entry) => entry.date === key) ?? null;
   }, [entries, selectedDate]);
 
@@ -102,7 +90,7 @@ export default function Homework() {
   );
 
   const isFormDisabled = memberLoading || loadingEntries || !member;
-  const isTodaySelected = selectedDate ? formatISODate(selectedDate) === today : false;
+  const isTodaySelected = selectedDate ? isTodayInVietnam(formatISODateInVietnam(selectedDate)) : false;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -191,7 +179,7 @@ export default function Homework() {
           <Card>
             <CardHeader>
               <CardTitle>{selectedEntry ? "Cập nhật bài đã nộp" : "Tạo bài nộp mới"}</CardTitle>
-              <CardDescription>Ngày {formatDisplayDate(formatISODate(selectedDate))}</CardDescription>
+              <CardDescription>Ngày {formatDisplayDateInVietnam(formatISODateInVietnam(selectedDate))}</CardDescription>
             </CardHeader>
             <CardContent>
               {memberError ? (

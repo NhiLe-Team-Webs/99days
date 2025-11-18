@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { fetchDailyVoiceEntries, upsertDailyVoiceEntry } from "@/lib/member-data";
+import { formatISODateInVietnam, formatDisplayDateInVietnam, isTodayInVietnam } from "@/lib/date-utils";
 
 interface DailyVoiceEntry {
   date: string;
@@ -18,20 +19,6 @@ interface DailyVoiceEntry {
 
 const promptTitle = "What do you feel like saying today?";
 
-function formatISODate(date?: Date) {
-  if (!date) return new Date().toISOString().split("T")[0]!;
-  const zonedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return zonedDate.toISOString().split("T")[0]!;
-}
-
-function formatDisplayDate(date: string) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
 
 export default function DailyVoice() {
   const { toast } = useToast();
@@ -43,8 +30,8 @@ export default function DailyVoice() {
   const [message, setMessage] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  const today = formatISODate();
-  const selectedKey = selectedDate ? formatISODate(selectedDate) : today;
+  const today = formatISODateInVietnam();
+  const selectedKey = selectedDate ? formatISODateInVietnam(selectedDate) : today;
 
   const daysWithEntries = useMemo(
     () =>
@@ -66,7 +53,7 @@ export default function DailyVoice() {
   );
 
   const isFormDisabled = memberLoading || loadingEntries || !member;
-  const isTodaySelected = selectedKey === today;
+  const isTodaySelected = isTodayInVietnam(selectedKey);
 
   useEffect(() => {
     if (!member) {
@@ -191,7 +178,7 @@ export default function DailyVoice() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{formatDisplayDate(selectedKey)}</CardTitle>
+              <CardTitle>{formatDisplayDateInVietnam(selectedKey)}</CardTitle>
               {selectedEntry ? (
                 <CardDescription>
                   Lần cập nhật gần nhất: {new Date(selectedEntry.updatedAt).toLocaleString("vi-VN")}

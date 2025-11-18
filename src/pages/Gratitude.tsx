@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { fetchGratitudeEntries, upsertGratitudeEntry } from "@/lib/member-data";
+import { formatISODateInVietnam, formatDisplayDateInVietnam, isTodayInVietnam } from "@/lib/date-utils";
 
 interface GratitudeEntry {
   date: string;
@@ -15,20 +16,6 @@ interface GratitudeEntry {
   updatedAt: string;
 }
 
-function formatDisplayDate(date: string) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function formatISODate(date?: Date) {
-  if (!date) return new Date().toISOString().split("T")[0]!;
-  const zonedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return zonedDate.toISOString().split("T")[0]!;
-}
 
 export default function Gratitude() {
   const { toast } = useToast();
@@ -40,10 +27,10 @@ export default function Gratitude() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [gratitude, setGratitude] = useState("");
 
-  const today = formatISODate();
+  const today = formatISODateInVietnam();
 
   const selectedEntry = useMemo(() => {
-    const key = formatISODate(selectedDate);
+    const key = formatISODateInVietnam(selectedDate);
     return entries.find((entry) => entry.date === key) ?? null;
   }, [entries, selectedDate]);
 
@@ -103,7 +90,7 @@ export default function Gratitude() {
   );
 
   const isFormDisabled = memberLoading || loadingEntries || !member;
-  const isTodaySelected = selectedDate ? formatISODate(selectedDate) === today : false;
+  const isTodaySelected = selectedDate ? isTodayInVietnam(formatISODateInVietnam(selectedDate)) : false;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -190,7 +177,7 @@ export default function Gratitude() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{formatDisplayDate(formatISODate(selectedDate))}</CardTitle>
+              <CardTitle>{formatDisplayDateInVietnam(formatISODateInVietnam(selectedDate))}</CardTitle>
               {selectedEntry ? (
                 <CardDescription>
                   Lần cập nhật gần nhất: {new Date(selectedEntry.updatedAt).toLocaleString("vi-VN")}
