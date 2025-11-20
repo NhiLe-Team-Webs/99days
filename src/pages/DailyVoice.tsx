@@ -36,8 +36,11 @@ export default function DailyVoice() {
   const daysWithEntries = useMemo(
     () =>
       entries.map((entry) => {
+        // Create date in Vietnam timezone to avoid timezone offset issues
         const date = new Date(`${entry.date}T00:00:00`);
-        return date;
+        // Adjust for Vietnam timezone (GMT+7)
+        const vietnamDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+        return vietnamDate;
       }),
     [entries],
   );
