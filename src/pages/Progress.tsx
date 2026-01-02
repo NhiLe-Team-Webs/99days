@@ -4,10 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { fetchProgressUpdates, upsertProgressUpdate } from "@/lib/member-data";
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { uploadProgressPhoto, deleteProgressPhoto, validateImageFile } from "@/lib/storage";
+import { ArrowDownRight, ArrowUpRight, Minus, Upload, X, Image as ImageIcon } from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -86,7 +93,11 @@ export default function Progress() {
   const [bust, setBust] = useState<string>("");
   const [hips, setHips] = useState<string>("");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoData, setPhotoData] = useState<string | null>(null);
+  const [photoData, setPhotoData] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!member) {
@@ -123,7 +134,8 @@ export default function Progress() {
           setBust(latest.bust != null ? latest.bust.toString() : "");
           setHips(latest.hips != null ? latest.hips.toString() : "");
           setPhotoPreview(latest.photoUrl);
-          setPhotoData(latest.photoUrl);
+          setPhotoUrl(latest.photoUrl);
+          setPhotoData(null);
         }
       })
       .catch((error) => {
@@ -173,6 +185,31 @@ export default function Progress() {
       }));
   }, [entries]);
 
+  const photosWithEntries = useMemo(() => {
+    return entries.filter((entry) => entry.photoUrl != null);
+  }, [entries]);
+
+  const selectedPhoto = selectedPhotoIndex !== null ? photosWithEntries[selectedPhotoIndex] ?? null : null;
+
+  useEffect(() => {
+    if (selectedPhotoIndex === null) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedPhotoIndex(null);
+      } else if (event.key === "ArrowLeft" && photosWithEntries.length > 1) {
+        event.preventDefault();
+        setSelectedPhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : photosWithEntries.length - 1));
+      } else if (event.key === "ArrowRight" && photosWithEntries.length > 1) {
+        event.preventDefault();
+        setSelectedPhotoIndex((prev) => (prev !== null && prev < photosWithEntries.length - 1 ? prev + 1 : 0));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedPhotoIndex, photosWithEntries.length]);
+
   const chartTooltipFormatter = useCallback((value: number | string, name: string) => {
     if (typeof value !== "number") return [value, name];
     const unit = name === "Cân nặng" ? "kg" : "cm";
@@ -181,7 +218,7 @@ export default function Progress() {
 
   const isFormDisabled = memberLoading || loadingEntries || !member;
 
-  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
       setPhotoPreview(null);
@@ -189,25 +226,43 @@ export default function Progress() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      setPhotoPreview(result);
-      setPhotoData(result);
-    };
-    reader.onerror = () => {
+    try {
+      validateImageFile(file);
+
+      setIsCompressing(true);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === "string" ? reader.result : null;
+        setPhotoPreview(result);
+      };
+      reader.onerror = () => {
+        throw new Error("Không thể đọc ảnh. Hãy thử chọn lại hoặc dùng một ảnh khác.");
+      };
+      reader.readAsDataURL(file);
+
+      setPhotoData(file);
+      setIsCompressing(false);
+    } catch (error) {
+      setIsCompressing(false);
+      setPhotoPreview(null);
+      setPhotoData(null);
       toast({
         variant: "destructive",
-        title: "Không thể đọc ảnh",
-        description: "Hãy thử chọn lại hoặc dùng một ảnh khác.",
+        title: "Lỗi chọn ảnh",
+        description: error instanceof Error ? error.message : "Hãy thử chọn lại hoặc dùng một ảnh khác.",
       });
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleRemovePhoto = () => {
     setPhotoPreview(null);
     setPhotoData(null);
+    setPhotoUrl(null);
+    const fileInput = document.getElementById("photo") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -234,6 +289,34 @@ export default function Progress() {
     const numericHips = parseMeasurement(hips);
 
     try {
+      let finalPhotoUrl: string | null = photoUrl;
+
+      if (photoData) {
+        setIsUploadingPhoto(true);
+        try {
+          const existingEntry = entries.find((e) => e.recordedFor === recordedFor);
+          if (existingEntry?.photoUrl) {
+            await deleteProgressPhoto(existingEntry.photoUrl);
+          }
+
+          finalPhotoUrl = await uploadProgressPhoto(member.id, photoData, recordedFor);
+          setPhotoUrl(finalPhotoUrl);
+          setPhotoData(null);
+        } catch (uploadError) {
+          console.error("Failed to upload photo:", uploadError);
+          toast({
+            variant: "destructive",
+            title: "Không thể upload ảnh",
+            description: uploadError instanceof Error ? uploadError.message : "Vui lòng thử lại sau.",
+          });
+          setIsUploadingPhoto(false);
+          setIsSaving(false);
+          return;
+        } finally {
+          setIsUploadingPhoto(false);
+        }
+      }
+
       const saved = await upsertProgressUpdate(
         member.id,
         recordedFor,
@@ -242,7 +325,7 @@ export default function Progress() {
         numericWaist,
         numericBust,
         numericHips,
-        photoData,
+        finalPhotoUrl,
       );
       const updated: ProgressEntry = {
         recordedAt: saved.recorded_at,
@@ -279,7 +362,7 @@ export default function Progress() {
       toast({
         variant: "destructive",
         title: "Không thể lưu tiến độ",
-        description: "Vui lòng thử lại sau.",
+        description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
       });
     } finally {
       setIsSaving(false);
@@ -447,6 +530,57 @@ export default function Progress() {
               )}
             </CardContent>
           </Card>
+
+          {photosWithEntries.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Ảnh tiến độ</CardTitle>
+                <CardDescription>Lịch sử các ảnh bạn đã upload để theo dõi sự thay đổi của cơ thể.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {photosWithEntries.map((entry, index) => (
+                    <div
+                      key={`${entry.recordedFor}-${entry.recordedAt}`}
+                      className="group cursor-pointer space-y-2"
+                      onClick={() => setSelectedPhotoIndex(index)}
+                    >
+                      <div className="relative overflow-hidden rounded-lg border border-border bg-muted/20 aspect-square">
+                        <img
+                          src={entry.photoUrl!}
+                          alt={`Ảnh tiến độ ngày ${entry.recordedFor}`}
+                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                          loading={index < 6 ? "eager" : "lazy"}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          <p className="text-sm font-medium">
+                            {new Date(`${entry.recordedFor}T00:00:00`).toLocaleDateString("vi-VN")}
+                          </p>
+                          <p className="text-xs text-white/80">
+                            {entry.weight.toFixed(1)} kg / {entry.height.toFixed(1)} cm
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {new Date(`${entry.recordedFor}T00:00:00`).toLocaleDateString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {entry.weight.toFixed(1)} kg • {entry.height.toFixed(1)} cm
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Ghi nhận chỉ số</CardTitle>
@@ -550,30 +684,91 @@ export default function Progress() {
                   </div>
                 </div>
 
-                {/* <div className="space-y-2">
+                <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground" htmlFor="photo">
-                    Ảnh minh chứng (tuỳ chọn)
+                    Ảnh tiến độ (tuỳ chọn)
                   </label>
-                  <Input id="photo" type="file" accept="image/*" onChange={handlePhotoChange} disabled={isFormDisabled} />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById("photo")?.click()}
+                      disabled={isFormDisabled || isCompressing || isUploadingPhoto}
+                      className="cursor-pointer"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload ảnh
+                    </Button>
+                    <Input
+                      id="photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      disabled={isFormDisabled || isCompressing || isUploadingPhoto}
+                      className="hidden"
+                    />
+                    {photoData && (
+                      <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                        {photoData.name}
+                      </span>
+                    )}
+                  </div>
+                  {(isCompressing || isUploadingPhoto) && (
+                    <p className="text-xs text-muted-foreground">
+                      {isCompressing ? "Đang xử lý ảnh..." : "Đang upload ảnh..."}
+                    </p>
+                  )}
                   {photoPreview ? (
                     <div className="mt-2 space-y-2">
-                      <div className="overflow-hidden rounded-lg border border-border bg-muted/20">
-                        <img
-                          src={photoPreview}
-                          alt="Ảnh tiến độ"
-                          className="h-48 w-full object-cover"
-                          loading="lazy"
-                        />
+                      <div className="relative overflow-hidden rounded-lg border-2 border-border bg-muted/10 shadow-sm">
+                        <div className="flex items-center justify-center min-h-[300px] max-h-[500px] bg-muted/5 p-4">
+                          <img
+                            src={photoPreview}
+                            alt="Ảnh tiến độ"
+                            className="max-w-full max-h-[460px] w-auto h-auto object-contain rounded-md shadow-md"
+                            loading="eager"
+                          />
+                        </div>
+                        {photoData && (
+                          <div className="absolute top-2 right-2 flex items-center gap-2">
+                            <div className="rounded-md bg-black/70 px-2 py-1 text-xs text-white backdrop-blur-sm">
+                              {(photoData.size / 1024).toFixed(1)} KB
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <Button type="button" variant="outline" onClick={handleRemovePhoto} disabled={isFormDisabled}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleRemovePhoto}
+                        disabled={isFormDisabled || isUploadingPhoto}
+                        className="w-full"
+                      >
+                        <X className="mr-2 h-4 w-4" />
                         Xóa ảnh này
                       </Button>
                     </div>
+                  ) : photoUrl && !photoData ? (
+                    <div className="mt-2 space-y-2">
+                      <div className="relative overflow-hidden rounded-lg border-2 border-border bg-muted/10 shadow-sm">
+                        <div className="flex items-center justify-center min-h-[300px] max-h-[500px] bg-muted/5 p-4">
+                          <img
+                            src={photoUrl}
+                            alt="Ảnh tiến độ hiện tại"
+                            className="max-w-full max-h-[460px] w-auto h-auto object-contain rounded-md shadow-md"
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Ảnh đã lưu. Chọn ảnh mới để thay thế.
+                      </p>
+                    </div>
                   ) : null}
                   <p className="text-xs text-muted-foreground">
-                    Ảnh được lưu trong cơ sở dữ liệu của bạn. Nếu không chọn ảnh mới, hệ thống sẽ giữ lại ảnh đã lưu trước đó.
+                    Bạn chỉ có thể upload một ảnh mỗi lần. Ảnh sẽ được tự động nén để tối ưu dung lượng.
                   </p>
-                </div> */}
+                </div>
 
                 <Button type="submit" disabled={isFormDisabled || isSaving}>
                   {isSaving ? "Đang lưu..." : "Lưu tiến độ"}
@@ -583,6 +778,98 @@ export default function Progress() {
           </Card>
         </div>
       </div>
+
+      {/* Photo Lightbox Dialog */}
+      <Dialog open={selectedPhotoIndex !== null} onOpenChange={(open) => !open && setSelectedPhotoIndex(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedPhoto
+                ? `Ảnh tiến độ - ${new Date(`${selectedPhoto.recordedFor}T00:00:00`).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}`
+                : "Ảnh tiến độ"}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedPhoto && (
+            <div className="space-y-4">
+              <div className="relative overflow-hidden rounded-lg border border-border bg-muted/20">
+                <img
+                  src={selectedPhoto.photoUrl!}
+                  alt={`Ảnh tiến độ ngày ${selectedPhoto.recordedFor}`}
+                  className="w-full h-auto max-h-[70vh] object-contain"
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-lg border border-border bg-muted/30 p-4">
+                  <p className="text-xs uppercase text-muted-foreground mb-1">Ngày ghi nhận</p>
+                  <p className="text-sm font-medium">
+                    {new Date(`${selectedPhoto.recordedFor}T00:00:00`).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-4">
+                  <p className="text-xs uppercase text-muted-foreground mb-1">Cân nặng / Chiều cao</p>
+                  <p className="text-sm font-medium">
+                    {selectedPhoto.weight.toFixed(1)} kg / {selectedPhoto.height.toFixed(1)} cm
+                  </p>
+                </div>
+                {(selectedPhoto.waist || selectedPhoto.bust || selectedPhoto.hips) && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 sm:col-span-2">
+                    <p className="text-xs uppercase text-muted-foreground mb-2">Số đo ba vòng</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {selectedPhoto.bust && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Ngực</p>
+                          <p className="text-sm font-medium">{selectedPhoto.bust.toFixed(1)} cm</p>
+                        </div>
+                      )}
+                      {selectedPhoto.waist && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Eo</p>
+                          <p className="text-sm font-medium">{selectedPhoto.waist.toFixed(1)} cm</p>
+                        </div>
+                      )}
+                      {selectedPhoto.hips && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Mông</p>
+                          <p className="text-sm font-medium">{selectedPhoto.hips.toFixed(1)} cm</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {photosWithEntries.length > 1 && (
+                <div className="flex items-center justify-between pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedPhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : photosWithEntries.length - 1))}
+                  >
+                    Ảnh trước
+                  </Button>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedPhotoIndex !== null ? selectedPhotoIndex + 1 : 0} / {photosWithEntries.length}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedPhotoIndex((prev) => (prev !== null && prev < photosWithEntries.length - 1 ? prev + 1 : 0))}
+                  >
+                    Ảnh sau
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AuthenticatedLayout>
   );
 }
